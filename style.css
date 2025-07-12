@@ -41,15 +41,37 @@ header {
     gap: 15px; /* 要素間の隙間 */
 }
 
+/* style.css */
 header h1 {
-    font-family: var(--title-font-family);
-    font-size: 1.8em;
+    /* フォントを本文と同じ読みやすいものに変更 */
+    font-family: var(--font-family);
+    font-size: 2.2em; /* 全体のサイズを少し調整 */
+    line-height: 1.1; /* 2行にした際の行間を調整 */
     margin: 0;
-    color: var(--primary-color);
-    /* タイトルが長すぎる場合に備える */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* text-align: left; /* 左寄せに */
+}
+
+/* タイトルの「EXPO」部分のスタイル */
+.title-expo {
+    color: var(--danger-color); /* 変数で定義した赤色 */
+    font-weight: 700; /* 太字 */
+}
+
+/* タイトルの「2025」部分のスタイル */
+.title-2025 {
+    color: var(--primary-color); /* 変数で定義した青色 */
+    font-weight: 700; /* 太字 */
+    margin-left: 0.2em; /* EXPOとの間に少し隙間を空ける */
+}
+
+/* サブタイトル「訪問履歴」のスタイル */
+.title-subtitle {
+    display: block; /* 2行目にするためにブロック要素に変更 */
+    font-size: 0.4em; /* 親要素に対して40%のサイズ */
+    font-weight: 700; /* 太字 */
+    color: var(--text-color); /* 通常のテキスト色（黒） */
+    letter-spacing: 0.1em; /* 文字間を少し広げる */
+    margin-top: 2px;
 }
 
 /* --- (他のスタイルは変更ありません) --- */
