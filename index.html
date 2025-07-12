@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上ちゃんの万博履歴管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header>
+        <h1>上ちゃんの万博履歴管理</h1>
+        <div id="auth-container">
+            <div id="user-info"></div>
+            <button id="login-btn">Googleでログイン</button>
+            <button id="logout-btn" style="display: none;">ログアウト</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="view-switcher">
+            <button id="show-pavilions-view" class="active">パビリオン一覧</button>
+            <button id="show-history-view">訪問履歴</button>
+        </div>
+
+        <div id="pavilions-view">
+            <section id="search-section">
+                 <input type="text" id="searchInput" placeholder="パビリオン名、愛称などで検索...">
+            </section>
+            <div id="pavilionList"></div>
+            <nav id="pagination-container" aria-label="Page navigation"></nav>
+        </div>
+
+        <div id="history-view" style="display: none;">
+            <section id="form-section">
+                <h2>履歴を追加・編集</h2>
+                <form id="visit-form">
+                    <div class="form-group">
+                        <label for="pavilion-name">パビリオン名:</label>
+                        <input type="text" id="pavilion-name" required readonly placeholder="一覧から選択してください">
+                    </div>
+                    <div class="form-group">
+                        <label for="visit-date">訪問日:</label>
+                        <input type="date" id="visit-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="wait-time">待ち時間 (分):</label>
+                        <input type="number" id="wait-time" placeholder="例: 60">
+                    </div>
+                    <div class="form-group">
+                        <label for="review-text">レビュー:</label>
+                        <textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea>
+                    </div>
+                    <button type="submit">履歴に保存する</button>
+                </form>
+            </section>
+            <section id="history-section">
+                <h2>訪問履歴一覧</h2>
+                <ul id="visit-history">
+                    </ul>
+            </section>
+        </div>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+
+</body>
+</html>
