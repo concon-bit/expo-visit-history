@@ -14,8 +14,7 @@ const firebaseConfig = {
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Firebaseアプリを初期化
@@ -90,7 +89,7 @@ const ExpoApp = {
     },
     api: {
         async fetchPavilions() {
-            const response = await fetch('/pavilions.json'); // Viteのpublicフォルダから取得
+            const response = await fetch('/pavilions.json');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -220,7 +219,7 @@ const ExpoApp = {
             pavilionCard.className = 'pavilion-card';
             const { areaMap } = ExpoApp.config;
             const imageUrl = pavilion.imageFile 
-                ? `/images/${pavilion.imageFile}` // Viteのpublicフォルダから取得
+                ? `/images/${pavilion.imageFile}`
                 : `https://placehold.jp/30/cccccc/ffffff/400x200.png?text=${encodeURIComponent(pavilion.name)}`;
             const reservationText = pavilion.reservation && pavilion.reservation.some(r => r === 'reservation-a' || r === 'reservation-b') 
                 ? '<span class="tag reservation">要予約</span>' 
