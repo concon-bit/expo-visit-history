@@ -1,0 +1,272 @@
+:root {
+    --primary-color: #007bff;
+    --primary-hover-color: #0056b3;
+    --success-color: #28a745;
+    --success-hover-color: #218838;
+    --danger-color: #dc3545;
+    --danger-hover-color: #c82333;
+    --light-bg-color: #f8f9fa;
+    --text-color: #212529;
+    --text-muted-color: #6c757d;
+    --border-color: #dee2e6;
+    --card-bg-color: #ffffff;
+    --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    --font-family: 'Noto Sans JP', sans-serif; 
+    --title-font-family: 'Mochiy Pop P One', sans-serif;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--light-bg-color);
+    color: var(--text-color);
+    margin: 0;
+    line-height: 1.6;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* --- ヘッダー --- */
+header {
+    background-color: var(--card-bg-color);
+    padding: 15px 30px;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px; /* 要素間の隙間 */
+}
+
+/* style.css の header h1 とその下のタイトル関連スタイルを置き換え */
+
+header h1 {
+    font-family: var(--font-family);
+    font-size: 1.8em; /* 2行になっても収まるようにサイズを調整 */
+    line-height: 1.2; /* 2行の行間を調整 */
+    margin: 0;
+}
+
+/* タイトルの「EXPO」部分のスタイル */
+.title-expo {
+    color: var(--danger-color);
+    font-weight: 700;
+}
+
+/* タイトルの「2025」部分のスタイル */
+.title-2025 {
+    color: var(--primary-color);
+    font-weight: 700;
+    /* margin-left を削除してスペースを詰めます */
+}
+
+/* サブタイトル「訪問履歴」のスタイル */
+.title-subtitle {
+    display: block;
+    font-weight: 700;
+    color: var(--text-color);
+    /* font-size と letter-spacing を削除して親と同じスタイルにします */
+}
+
+/* --- (他のスタイルは変更ありません) --- */
+
+h2 {
+    font-size: 1.4em;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+h2:first-child {
+    margin-top: 0;
+}
+
+/* --- 認証エリア --- */
+#auth-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0; /* 認証エリアが縮まないようにする */
+}
+#user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
+#user-info img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+}
+#auth-container button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+#login-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+#logout-btn {
+    background-color: var(--danger-color);
+    color: white;
+}
+#auth-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* --- 表示切り替えタブ --- */
+.view-switcher {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--border-color);
+}
+.view-switcher button {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    background-color: transparent;
+    color: var(--text-muted-color);
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    transform: translateY(1px);
+}
+.view-switcher button.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* --- 履歴追加フォーム --- */
+#form-section {
+    background-color: var(--card-bg-color);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 30px;
+}
+#visit-form { display: flex; flex-direction: column; gap: 15px; }
+.form-group { display: flex; flex-direction: column; }
+#visit-form label { margin-bottom: 5px; font-weight: bold; color: #555; }
+#visit-form input, #visit-form textarea {
+    padding: 10px; border: 1px solid var(--border-color); border-radius: 5px;
+    font-size: 1em; font-family: var(--font-family);
+}
+#visit-form input[type="text"]:read-only { background-color: #e9ecef; cursor: not-allowed; }
+#visit-form button[type="submit"] {
+    background-color: var(--primary-color); color: white; border: none; padding: 12px 20px;
+    border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold;
+    transition: background-color 0.3s ease; align-self: flex-start;
+}
+#visit-form button[type="submit"]:hover { background-color: var(--primary-hover-color); }
+
+
+/* --- 検索入力 --- */
+#searchInput {
+    width: 100%; padding: 12px 15px; font-size: 1.1em; border: 1px solid var(--border-color);
+    border-radius: 8px; margin-bottom: 20px; box-sizing: border-box;
+}
+
+/* --- パビリオン一覧 --- */
+#pavilionList {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
+}
+.pavilion-card {
+    border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg-color);
+    box-shadow: var(--card-shadow); display: flex; flex-direction: column;
+    overflow: hidden; transition: transform 0.2s, box-shadow 0.2s;
+}
+.pavilion-card:hover { transform: translateY(-5px); box-shadow: 0 8px 12px rgba(0,0,0,0.08); }
+.pavilion-card .card-header-image { width: 100%; height: 150px; background-color: #eee; object-fit: cover; }
+.pavilion-card .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+.pavilion-card h3 { font-size: 1.2em; margin: 0 0 10px 0; }
+.pavilion-card p { margin: 0 0 8px 0; color: var(--text-muted-color); font-size: 0.9em; }
+.pavilion-card p strong { color: var(--text-color); }
+.card-footer { margin-top: auto; padding-top: 10px; }
+.add-to-history-btn {
+    width: 100%; padding: 10px; background-color: var(--success-color); color: white; border: none;
+    border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease; font-weight: bold;
+}
+.add-to-history-btn:hover { background-color: var(--success-hover-color); }
+.tag.reservation { font-weight: bold; color: #c2185b; }
+
+/* --- 訪問履歴一覧 --- */
+#visit-history { list-style: none; padding: 0; display: grid; gap: 15px; }
+.history-card {
+    background-color: var(--card-bg-color); border-radius: 8px; box-shadow: var(--card-shadow);
+    padding: 20px; display: flex; justify-content: space-between; align-items: flex-start;
+    border-left: 5px solid var(--primary-color);
+}
+.history-card .info { flex-grow: 1; }
+.history-card strong { font-size: 1.2em; color: var(--text-color); }
+.history-card .date { font-size: 0.9em; color: var(--text-muted-color); margin-left: 10px; }
+.history-card .details { margin: 10px 0; font-size: 0.9em; color: var(--text-muted-color); }
+.history-card .review { margin-top: 10px; padding-left: 15px; border-left: 3px solid #eee; font-style: italic; color: #555; white-space: pre-wrap; }
+.delete-button {
+    background-color: var(--danger-color); color: white; border: none; padding: 8px 12px;
+    border-radius: 5px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s ease;
+    margin-left: 15px;
+}
+.delete-button:hover { background-color: var(--danger-hover-color); }
+
+/* --- ページネーション --- */
+#pagination-container {
+    margin-top: 30px; display: flex; justify-content: center;
+    align-items: center; flex-wrap: wrap; gap: 5px;
+}
+.page-btn {
+    padding: 8px 14px; border: 1px solid var(--border-color); background-color: var(--card-bg-color);
+    color: var(--primary-color); cursor: pointer; border-radius: 5px; transition: all 0.3s ease;
+}
+.page-btn:hover { background-color: #e9ecef; border-color: #adb5bd; }
+.page-btn.active {
+    background-color: var(--primary-color); color: white;
+    border-color: var(--primary-color); font-weight: bold;
+}
+
+/* --- ★ここから修正：レスポンシブデザイン（スマホ用） --- */
+@media (max-width: 600px) {
+    header {
+        padding: 10px 15px;
+    }
+    header h1 {
+        font-size: 1.2em;
+    }
+    #auth-container button {
+        padding: 8px 12px;
+        font-size: 14px;
+        gap: 8px;
+    }
+    #user-info {
+        font-size: 14px;
+    }
+    #user-info span {
+        display: none; /* 狭い画面ではユーザー名を非表示に */
+    }
+    #user-info img {
+        width: 36px;
+        height: 36px;
+    }
+}
+.pavilion-card a {
+    text-decoration: none; /* リンクの下線を消す */
+    color: inherit; /* 文字色を親要素から継承 */
+}
