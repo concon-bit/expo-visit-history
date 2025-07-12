@@ -215,7 +215,7 @@
   },
   {
     "name": "アルジェリアパビリオン",
-    "imageFile": "アゼルバイジャンパビリオン.jpg",
+    "imageFile": "アルジェリアパビリオン.jpg",
     "id": "8112e792-d782-4ab6-ba38-36a7d8ae9194",
     "type": "international",
     "building": "S05-01",
@@ -239,7 +239,7 @@
   },
   {
     "name": "アルメニアパビリオン",
-    "imageFile": "アルメニアパビリオン.jpg",
+    "imageFile": "アルメニアパビリオン.png",
     "id": "eb53f062-8938-4cd9-bfd8-9ba36ee3b77c",
     "type": "international",
     "building": "C05-61",
@@ -331,7 +331,7 @@
   },
   {
     "name": "ITER機構",
-    "imageFile": "ITER機構.jpg",
+    "imageFile": "ITER機構.png",
     "id": "f3d7e345-6907-4358-a7c4-76c6371eeeeb",
     "type": "international",
     "building": "P29-62",
@@ -419,7 +419,7 @@
       34.652068,
       135.381845
     ],
-    "imageFile": "飯田グループxd7大阪公立大学共同出展館.jpg"
+    "imageFile": "飯田グループ×大阪公立大学共同出展館.jpg"
   },
   {
     "name": "イエメン",
@@ -541,7 +541,7 @@
       34.649588,
       135.380469
     ],
-    "imageFile": "イタリアパビリオン_also_hosting_the_holy_see.jpg"
+    "imageFile": "イタリアパビリオン.jpg"
   },
   {
     "name": "いのち動的平衡館",
@@ -632,7 +632,7 @@
       34.648013,
       135.38343
     ],
-    "imageFile": "いのちの遊び場_クラゲ館.jpg"
+    "imageFile": "クラゲ館.jpg"
   },
   {
     "name": "いのちの未来",
@@ -796,7 +796,7 @@
       34.651208,
       135.381885
     ],
-    "imageFile": "インドネシアパビリオン.jpg"
+    "imageFile": "インドネシアパビリオン.jpeg"
   },
   {
     "name": "ウーマンズ パビリオン in collaboration with Cartier",
