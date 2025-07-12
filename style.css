@@ -38,6 +38,7 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 15px; /* 要素間の隙間 */
 }
 
 header h1 {
@@ -45,8 +46,13 @@ header h1 {
     font-size: 1.8em;
     margin: 0;
     color: var(--primary-color);
-    /* text-align: center; を削除して左寄せに */
+    /* タイトルが長すぎる場合に備える */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
+/* --- (他のスタイルは変更ありません) --- */
 
 h2 {
     font-size: 1.4em;
@@ -65,6 +71,7 @@ h2:first-child {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-shrink: 0; /* 認証エリアが縮まないようにする */
 }
 #user-info {
     display: flex;
@@ -105,9 +112,7 @@ h2:first-child {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* --- (これ以降のセクションは変更ありません) --- */
-
-/* View Switcher (タブ切り替え) */
+/* --- 表示切り替えタブ --- */
 .view-switcher {
     display: flex;
     justify-content: center;
@@ -131,7 +136,7 @@ h2:first-child {
     border-bottom-color: var(--primary-color);
 }
 
-/* Form Section */
+/* --- 履歴追加フォーム --- */
 #form-section {
     background-color: var(--card-bg-color);
     padding: 25px;
@@ -142,8 +147,7 @@ h2:first-child {
 #visit-form { display: flex; flex-direction: column; gap: 15px; }
 .form-group { display: flex; flex-direction: column; }
 #visit-form label { margin-bottom: 5px; font-weight: bold; color: #555; }
-#visit-form input,
-#visit-form textarea {
+#visit-form input, #visit-form textarea {
     padding: 10px; border: 1px solid var(--border-color); border-radius: 5px;
     font-size: 1em; font-family: var(--font-family);
 }
@@ -155,13 +159,14 @@ h2:first-child {
 }
 #visit-form button[type="submit"]:hover { background-color: var(--primary-hover-color); }
 
-/* Search Input */
+
+/* --- 検索入力 --- */
 #searchInput {
     width: 100%; padding: 12px 15px; font-size: 1.1em; border: 1px solid var(--border-color);
     border-radius: 8px; margin-bottom: 20px; box-sizing: border-box;
 }
 
-/* Pavilion List */
+/* --- パビリオン一覧 --- */
 #pavilionList {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;
 }
@@ -184,7 +189,7 @@ h2:first-child {
 .add-to-history-btn:hover { background-color: var(--success-hover-color); }
 .tag.reservation { font-weight: bold; color: #c2185b; }
 
-/* Visit History List */
+/* --- 訪問履歴一覧 --- */
 #visit-history { list-style: none; padding: 0; display: grid; gap: 15px; }
 .history-card {
     background-color: var(--card-bg-color); border-radius: 8px; box-shadow: var(--card-shadow);
@@ -203,7 +208,7 @@ h2:first-child {
 }
 .delete-button:hover { background-color: var(--danger-hover-color); }
 
-/* Pagination */
+/* --- ページネーション --- */
 #pagination-container {
     margin-top: 30px; display: flex; justify-content: center;
     align-items: center; flex-wrap: wrap; gap: 5px;
@@ -218,24 +223,27 @@ h2:first-child {
     border-color: var(--primary-color); font-weight: bold;
 }
 
-/* --- レスポンシブデザイン（スマホ用） --- */
+/* --- ★ここから修正：レスポンシブデザイン（スマホ用） --- */
 @media (max-width: 600px) {
     header {
         padding: 10px 15px;
     }
     header h1 {
-        font-size: 1.2em; /* スマホではタイトルを少し小さく */
-    }
-    #auth-container {
-        gap: 8px;
+        font-size: 1.2em;
     }
     #auth-container button {
-        padding: 8px 10px;
+        padding: 8px 12px;
         font-size: 14px;
         gap: 8px;
     }
+    #user-info {
+        font-size: 14px;
+    }
+    #user-info span {
+        display: none; /* 狭い画面ではユーザー名を非表示に */
+    }
     #user-info img {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
     }
 }
