@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万博訪問履歴管理アプリ</title>
+
     <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
@@ -37,34 +39,38 @@
             <nav id="pagination-container" aria-label="Page navigation"></nav>
         </div>
         <div id="history-view" style="display: none;">
-            <section id="form-section">
-                <h2>履歴を追加</h2>
-                <form id="visit-form">
-                    <div class="form-group">
-                        <label for="pavilion-name">パビリオン名:</label>
-                        <input type="text" id="pavilion-name" required readonly placeholder="一覧から選択してください">
-                    </div>
-                    <div class="form-group">
-                        <label for="visit-date">訪問日:</label>
-                        <input type="date" id="visit-date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="wait-time">待ち時間 (分):</label>
-                        <input type="number" id="wait-time" placeholder="例: 60">
-                    </div>
-                    <div class="form-group">
-                        <label for="review-text">レビュー:</label>
-                        <textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea>
-                    </div>
-                    <button type="submit">履歴に保存する</button>
-                </form>
-            </section>
             <section id="history-section">
                 <h2>訪問履歴一覧</h2>
                 <ul id="visit-history"></ul>
             </section>
         </div>
     </main>
+
+    <div id="visit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2>履歴を追加</h2>
+            <form id="visit-form">
+                <div class="form-group">
+                    <label for="pavilion-name">パビリオン名:</label>
+                    <input type="text" id="pavilion-name" required readonly placeholder="一覧から選択してください">
+                </div>
+                <div class="form-group">
+                    <label for="visit-date">訪問日:</label>
+                    <input type="date" id="visit-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="wait-time">待ち時間 (分):</label>
+                    <input type="number" id="wait-time" placeholder="例: 60">
+                </div>
+                <div class="form-group">
+                    <label for="review-text">レビュー:</label>
+                    <textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea>
+                </div>
+                <button type="submit">確定して履歴に保存</button>
+            </form>
+        </div>
+    </div>
     <script type="module" src="/main.js"></script>
 </body>
 </html>
