@@ -11,18 +11,26 @@
     
     <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
     <header>
         <h1>
-            <div>
+            <div class="main-title">
                 <span class="title-expo">EXPO</span><span class="title-2025">2025</span>
+                <span class="title-subtitle">訪問履歴</span>
             </div>
-            <span class="title-subtitle">訪問履歴</span>
+            <div id="conquest-counter" class="conquest-counter"></div>
         </h1>
         <div id="auth-container">
-            <div id="user-info"></div>
+            <div id="user-info">
+                </div>
             <button id="login-btn">ログイン</button>
-            <button id="logout-btn" style="display: none;">ログアウト</button>
+            
+            <div id="account-popup" class="account-popup">
+                <div id="popup-user-info" class="popup-user-info">
+                    </div>
+                <button id="popup-logout-btn" class="popup-logout-btn">ログアウト</button>
+            </div>
         </div>
     </header>
 
@@ -35,7 +43,7 @@
 
         <div id="pavilions-view">
             <section id="search-section">
-                 <input type="text" id="searchInput" placeholder="パビリオン名、愛称などで検索...">
+                <input type="text" id="searchInput" placeholder="パビリオン名、愛称などで検索...">
             </section>
             <div id="pavilionList" class="pavilion-list-container"></div>
             <nav id="pagination-container" aria-label="Page navigation"></nav>
@@ -44,24 +52,22 @@
         <div id="history-view" style="display: none;">
             <section id="history-section">
                 <h2>訪問履歴一覧</h2>
-                <ul id="visit-history">
-                    </ul>
+                <ul id="visit-history"></ul>
             </section>
         </div>
 
         <div id="wishlist-view" style="display: none;">
             <section id="wishlist-section">
                 <h2>行きたいパビリオン一覧</h2>
-                <ul id="wishlist">
-                </ul>
+                <ul id="wishlist"></ul>
             </section>
         </div>
     </main>
 
-    <div id="visit-modal" class="modal-overlay">
+    <div id="visit-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="visit-modal-title">
         <div class="modal-content">
-            <button class="modal-close-btn">&times;</button>
-            <h2>履歴を追加</h2>
+            <button class="modal-close-btn" aria-label="閉じる">&times;</button>
+            <h2 id="visit-modal-title">履歴を追加</h2>
             <form id="visit-form">
                 <div class="form-group">
                     <label for="pavilion-name">パビリオン名:</label>
@@ -84,13 +90,12 @@
         </div>
     </div>
 
-    <div id="edit-modal" class="modal-overlay">
+    <div id="edit-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
         <div class="modal-content">
-            <button class="modal-close-btn">&times;</button>
-            <h2>履歴を編集</h2>
+            <button class="modal-close-btn" aria-label="閉じる">&times;</button>
+            <h2 id="edit-modal-title">履歴を編集</h2>
             <form id="edit-form">
                 <input type="hidden" id="edit-doc-id">
-                
                 <div class="form-group">
                     <label for="edit-pavilion-name">パビリオン名:</label>
                     <input type="text" id="edit-pavilion-name" required readonly>
@@ -111,6 +116,7 @@
             </form>
         </div>
     </div>
+
     <script type="module" src="/main.js"></script>
 
 </body>
