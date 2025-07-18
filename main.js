@@ -285,15 +285,16 @@ const ExpoApp = {
                 const item = document.createElement("li");
                 item.className = "history-card";
                 const rating = visit.rating || 0;
-                const starsHTML = Array.from({ length: 5 }, (_, i) => `<span class="star ${i < rating ? '' : 'empty'}">★</span>`).join('');
-                const waitTimeHTML = visit.waitTime ? `<p class="details">${"待ち時間: "}<strong>${visit.waitTime}</strong>分</p>` : '';
+                const starsHTML = rating > 0 ? Array.from({ length: 5 }, (_, i) => `<span class="star ${i < rating ? '' : 'empty'}">★</span>`).join('') : '';
+                const waitTimeHTML = visit.waitTime ? `待ち時間: <strong>${visit.waitTime}</strong>分` : '';
                 const reviewHTML = visit.review ? `<p class="review">${visit.review}</p>` : '';
+
                 item.innerHTML = `
                     <div class="info">
                         <strong>${visit.name}</strong>
-                        <span class="date">訪問日: ${visit.date}</span>
+                        <div class="history-meta-item">訪問日: ${visit.date}</div>
+                        <div class="history-meta-item">${waitTimeHTML}</div>
                         <div class="star-rating-display">${starsHTML}</div>
-                        ${waitTimeHTML}
                         ${reviewHTML}
                     </div>
                     <div class="actions">
@@ -426,6 +427,9 @@ const ExpoApp = {
             visitForm.reset();
             visitForm.querySelector("#pavilion-name").value = pavilionName;
             visitForm.querySelector("#visit-date").valueAsDate = new Date();
+            const starContainer = visitForm.querySelector('.star-rating-input');
+            starContainer.dataset.rating = 0;
+            starContainer.querySelectorAll('span').forEach(star => star.style.color = 'var(--border-color)');
             visitModal.style.display = "flex";
             visitForm.querySelector("#wait-time").focus();
         },
@@ -445,7 +449,6 @@ const ExpoApp = {
                     editForm.querySelector("#edit-visit-date").value = data.date;
                     editForm.querySelector("#edit-wait-time").value = data.waitTime;
                     editForm.querySelector("#edit-review-text").value = data.review;
-                    // ★★★ 編集モーダルに評価をセット ★★★
                     const starContainer = editForm.querySelector('.star-rating-input');
                     starContainer.dataset.rating = data.rating || 0;
                     starContainer.querySelectorAll('span').forEach(star => {

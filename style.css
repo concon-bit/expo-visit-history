@@ -16,7 +16,6 @@
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     --font-family: 'Noto Sans JP', sans-serif;
     --star-color: #f39c12;
-    /* スター評価用の色 */
 }
 
 body {
@@ -401,24 +400,27 @@ header h1 {
     border-left: 5px solid var(--primary-color);
 }
 
+.history-card .info {
+    flex-grow: 1;
+}
+
 .history-card strong {
     font-size: 1.2em;
     color: var(--text-color);
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
-.history-card .date {
+.history-meta-item {
     font-size: 0.9em;
     color: var(--text-muted-color);
-    display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
-.history-card .details {
-    margin: 5px 0;
-    font-size: 0.9em;
-    white-space: nowrap;
+.history-meta-item strong {
+    display: inline;
+    font-size: 1em;
+    color: var(--text-color);
 }
 
 .history-card .review {
@@ -434,10 +436,27 @@ header h1 {
     margin-left: 15px;
 }
 
+.history-card .actions button {
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.history-card .edit-button {
+    background-color: var(--primary-color);
+}
+
+.history-card .delete-button {
+    background-color: var(--danger-color);
+}
+
 .star-rating-display {
     color: var(--star-color);
     font-size: 1.2em;
-    margin: 5px 0 10px;
+    margin-bottom: 8px;
 }
 
 .star-rating-display .star.empty {
@@ -462,21 +481,19 @@ header h1 {
     flex-shrink: 0;
 }
 
-.history-card .actions button,
+.wishlist-card .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 15px;
+}
+
 .wishlist-card .actions button {
     color: white;
     border: none;
     padding: 8px 12px;
     border-radius: 5px;
     cursor: pointer;
-}
-
-.history-card .edit-button {
-    background-color: var(--primary-color);
-}
-
-.history-card .delete-button {
-    background-color: var(--danger-color);
 }
 
 .wishlist-card .move-to-history-btn {
