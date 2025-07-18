@@ -28,6 +28,7 @@ const ExpoApp = {
     state: {
         allPavilions: [],
         filteredPavilions: [],
+        wishlist: [], // ★★★ 追加 ★★★ 行きたいリストの状態を管理
         currentPage: 1,
         currentUser: null,
     },
@@ -40,6 +41,11 @@ const ExpoApp = {
         pavilionsView: null, historyView: null, showPavilionsBtn: null, showHistoryBtn: null,
         loginBtn: null, logoutBtn: null, userInfo: null,
         visitModal: null, editModal: null, editForm: null,
+        // ★★★ ここから追加 ★★★
+        wishlistView: null,
+        showWishlistBtn: null,
+        wishlistList: null,
+        // ★★★ ここまで追加 ★★★
     },
     async initialize() {
         this.cacheDOMElements();
@@ -71,10 +77,16 @@ const ExpoApp = {
         this.elements.visitForm = D.getElementById('visit-form');
         this.elements.editModal = D.getElementById('edit-modal');
         this.elements.editForm = D.getElementById('edit-form');
+        // ★★★ ここから追加 ★★★
+        this.elements.wishlistView = D.getElementById('wishlist-view');
+        this.elements.showWishlistBtn = D.getElementById('show-wishlist-view');
+        this.elements.wishlistList = D.getElementById('wishlist');
+        // ★★★ ここまで追加 ★★★
     },
     addEventListeners() {
         this.elements.showPavilionsBtn.addEventListener('click', () => ExpoApp.ui.switchView('pavilions'));
         this.elements.showHistoryBtn.addEventListener('click', () => ExpoApp.ui.switchView('history'));
+        this.elements.showWishlistBtn.addEventListener('click', () => ExpoApp.ui.switchView('wishlist')); // ★★★ 追加 ★★★
         this.elements.searchInput.addEventListener('input', (event) => ExpoApp.handlers.handleSearchInput(event));
         this.elements.pavilionList.addEventListener('click', (event) => ExpoApp.handlers.handlePavilionClick(event));
         this.elements.visitForm.addEventListener('submit', (event) => ExpoApp.handlers.handleVisitFormSubmit(event));
@@ -92,26 +104,33 @@ const ExpoApp = {
             }
         });
         this.elements.editForm.addEventListener('submit', (event) => ExpoApp.handlers.handleEditFormSubmit(event));
+        this.elements.wishlistList.addEventListener('click', (event) => ExpoApp.handlers.handleWishlistItemClick(event)); // ★★★ 追加 ★★★
     },
     setupAuthObserver() {
         onAuthStateChanged(firebaseAuth, user => {
             ExpoApp.state.currentUser = user;
             ExpoApp.ui.updateLoginStatus();
             ExpoApp.ui.renderVisitHistory();
+            ExpoApp.ui.renderWishlist(); // ★★★ 追加 ★★★ ログイン状態が変わったらウィッシュリストも再描画
         });
     },
 
-    // ★★★ 修正：削除されていたapiオブジェクトを復元 ★★★
     api: {
         async fetchPavilions() {
             const response = await fetch('/pavilions.json');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.json();
+        },
+        // ★★★ ここから追加 ★★★
+        async fetchWishes(userId) {
+            const q = query(collection(firestoreDB, "wishes"), where("userId", "==", userId), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+            const wishes = [];
+            querySnapshot.forEach((doc) => wishes.push({ id: doc.id, ...doc.data() }));
+            return wishes;
         }
+        // ★★★ ここまで追加 ★★★
     },
-    // ★★★ ここまで ★★★
 
     handlers: {
         handleSearchInput(event) {
@@ -124,14 +143,21 @@ const ExpoApp = {
             ExpoApp.ui.renderPavilions();
         },
         handlePavilionClick(event) {
-            if (event.target.classList.contains('add-to-history-btn')) {
-                const pavilionName = event.target.dataset.pavilionName;
+            const target = event.target;
+            if (target.classList.contains('add-to-history-btn')) {
+                const pavilionName = target.dataset.pavilionName;
                 ExpoApp.ui.openVisitModal(pavilionName);
             }
+            // ★★★ ここから追加 ★★★
+            if (target.classList.contains('add-to-wishlist-btn')) {
+                const pavilionName = target.dataset.pavilionName;
+                ExpoApp.handlers.handleAddWish(pavilionName);
+            }
+            // ★★★ ここまで追加 ★★★
         },
         async handleVisitFormSubmit(event) {
             event.preventDefault();
-            if (!ExpoApp.state.currentUser) { return alert("ログインしてください。"); }
+            if (!ExpoApp.state.currentUser) return alert("ログインしてください。");
             const form = ExpoApp.elements.visitForm;
             const visitData = {
                 userId: ExpoApp.state.currentUser.uid,
@@ -186,6 +212,47 @@ const ExpoApp = {
                 } catch (error) { console.error("削除に失敗:", error); }
             }
         },
+        // ★★★ ここから追加 ★★★
+        async handleAddWish(pavilionName) {
+            if (!ExpoApp.state.currentUser) return alert("ログインしてください。");
+            // 既にリストにあるかチェック
+            if (ExpoApp.state.wishlist.some(item => item.pavilionName === pavilionName)) {
+                return alert("このパビリオンは既に行きたいリストに追加されています。");
+            }
+            const wishData = {
+                userId: ExpoApp.state.currentUser.uid,
+                pavilionName: pavilionName,
+                createdAt: new Date()
+            };
+            try {
+                await addDoc(collection(firestoreDB, "wishes"), wishData);
+                ExpoApp.ui.renderWishlist(); // 画面を再描画
+            } catch (error) {
+                console.error("行きたいリストへの追加に失敗:", error);
+                alert("エラー：行きたいリストへの追加に失敗しました。");
+            }
+        },
+        async handleDeleteWish(docId) {
+            if (!ExpoApp.state.currentUser) return;
+            if (confirm('このパビリオンを行きたいリストから削除しますか？')) {
+                try {
+                    await deleteDoc(doc(firestoreDB, "wishes", docId));
+                    ExpoApp.ui.renderWishlist(); // 画面を再描画
+                } catch (error) {
+                    console.error("行きたいリストからの削除に失敗:", error);
+                }
+            }
+        },
+        handleWishlistItemClick(event) {
+            const target = event.target;
+            if (target.classList.contains('delete-wish-btn')) {
+                ExpoApp.handlers.handleDeleteWish(target.dataset.id);
+            }
+            if (target.classList.contains('move-to-history-btn')) {
+                ExpoApp.ui.openVisitModal(target.dataset.pavilionName);
+            }
+        },
+        // ★★★ ここまで追加 ★★★
         async handleLogin() {
             const provider = new GoogleAuthProvider();
             try { await signInWithPopup(firebaseAuth, provider); }
@@ -209,15 +276,35 @@ const ExpoApp = {
                 ExpoApp.elements.logoutBtn.style.display = 'none';
             }
         },
+        // ★★★ ここから修正 ★★★
         switchView(viewNameToShow) {
-            const { pavilionsView, historyView, showPavilionsBtn, showHistoryBtn } = ExpoApp.elements;
-            const isHistoryView = viewNameToShow === 'history';
-            pavilionsView.style.display = isHistoryView ? 'none' : 'block';
-            historyView.style.display = isHistoryView ? 'block' : 'none';
-            showPavilionsBtn.classList.toggle('active', !isHistoryView);
-            showHistoryBtn.classList.toggle('active', isHistoryView);
-            if (isHistoryView) { ExpoApp.ui.renderVisitHistory(); }
+            const { pavilionsView, historyView, wishlistView, showPavilionsBtn, showHistoryBtn, showWishlistBtn } = ExpoApp.elements;
+
+            // 全てのビューを一旦非表示
+            pavilionsView.style.display = 'none';
+            historyView.style.display = 'none';
+            wishlistView.style.display = 'none';
+            
+            // 全てのボタンのactiveクラスを削除
+            showPavilionsBtn.classList.remove('active');
+            showHistoryBtn.classList.remove('active');
+            showWishlistBtn.classList.remove('active');
+            
+            // 対象のビューを表示し、対応するボタンをアクティブ化
+            if (viewNameToShow === 'pavilions') {
+                pavilionsView.style.display = 'block';
+                showPavilionsBtn.classList.add('active');
+            } else if (viewNameToShow === 'history') {
+                historyView.style.display = 'block';
+                showHistoryBtn.classList.add('active');
+                ExpoApp.ui.renderVisitHistory(); 
+            } else if (viewNameToShow === 'wishlist') {
+                wishlistView.style.display = 'block';
+                showWishlistBtn.classList.add('active');
+                ExpoApp.ui.renderWishlist();
+            }
         },
+        // ★★★ ここまで修正 ★★★
         renderPavilions() {
             const { pavilionList } = ExpoApp.elements;
             const { currentPage, filteredPavilions } = ExpoApp.state;
@@ -237,6 +324,7 @@ const ExpoApp = {
             pavilionList.appendChild(fragment);
             ExpoApp.ui.renderPagination();
         },
+        // ★★★ ここから修正 ★★★
         createPavilionCard(pavilion) {
             const pavilionCard = document.createElement('div');
             pavilionCard.className = 'pavilion-card';
@@ -248,6 +336,12 @@ const ExpoApp = {
                 ? '<span class="tag reservation">要予約</span>' 
                 : '<span class="tag">予約不要</span>';
             const location = `${areaMap[pavilion.area] || 'その他'}ゾーン / ${pavilion.building || 'N/A'}`;
+            
+            // 行きたいリストに追加済みかチェック
+            const isInWishlist = ExpoApp.state.wishlist.some(item => item.pavilionName === pavilion.name);
+            const wishButtonClass = isInWishlist ? 'add-to-wishlist-btn added' : 'add-to-wishlist-btn';
+            const wishButtonText = isInWishlist ? '追加済み' : '行きたい！';
+
             pavilionCard.innerHTML = `
                 <a href="${pavilion.url}" target="_blank" rel="noopener noreferrer">
                     <img src="${imageUrl}" alt="${pavilion.name}" class="card-header-image">
@@ -258,12 +352,15 @@ const ExpoApp = {
                     <p><strong>所要時間:</strong> 約${pavilion.duration || 'N/A'}分</p>
                     <p><strong>予約:</strong> ${reservationText}</p>
                     <div class="card-footer">
+                        <button class="${wishButtonClass}" data-pavilion-name="${pavilion.name}">${wishButtonText}</button>
                         <button class="add-to-history-btn" data-pavilion-name="${pavilion.name}">訪問履歴に追加</button>
                     </div>
                 </div>`;
             return pavilionCard;
         },
+        // ★★★ ここまで修正 ★★★
         renderPagination() {
+            // (変更なし)
             const { paginationContainer } = ExpoApp.elements;
             const { currentPage, filteredPavilions } = ExpoApp.state;
             const { itemsPerPage } = ExpoApp.config;
@@ -283,6 +380,7 @@ const ExpoApp = {
             }
         },
         async renderVisitHistory() {
+            // (変更なし)
             const { visitHistoryList } = ExpoApp.elements;
             const user = ExpoApp.state.currentUser;
             if (!user) {
@@ -317,8 +415,73 @@ const ExpoApp = {
             });
             visitHistoryList.appendChild(fragment);
         },
+        // ★★★ ここから追加 ★★★
+        async renderWishlist() {
+            const { wishlistList } = ExpoApp.elements;
+            const user = ExpoApp.state.currentUser;
+
+            if (!user) {
+                wishlistList.innerHTML = '<p style="text-align: center;">ログインすると「行きたいリスト」が表示されます。</p>';
+                return;
+            }
+
+            wishlistList.innerHTML = '<p style="text-align: center;">データを読み込み中...</p>';
+            
+            try {
+                const wishes = await ExpoApp.api.fetchWishes(user.uid);
+                ExpoApp.state.wishlist = wishes; // 取得したリストをstateに保存
+                wishlistList.innerHTML = ''; // 一旦クリア
+
+                if (wishes.length === 0) {
+                    wishlistList.innerHTML = '<p style="text-align: center;">まだ「行きたいリスト」に登録されていません。</p>';
+                    return;
+                }
+
+                const fragment = document.createDocumentFragment();
+                wishes.forEach(wish => {
+                    // allPavilionsから完全なパビリオン情報を検索
+                    const pavilion = ExpoApp.state.allPavilions.find(p => p.name === wish.pavilionName);
+                    if (!pavilion) return; //万が一見つからなければスキップ
+
+                    const wishItemCard = ExpoApp.ui.createWishlistItemCard(pavilion, wish.id);
+                    fragment.appendChild(wishItemCard);
+                });
+                wishlistList.appendChild(fragment);
+                
+                // パビリオン一覧も再描画して「追加済み」表示を更新
+                this.renderPavilions();
+
+            } catch (error) {
+                console.error("行きたいリストの読み込みに失敗しました:", error);
+                wishlistList.innerHTML = '<p style="text-align: center;">リストの読み込みに失敗しました。</p>';
+            }
+        },
+        createWishlistItemCard(pavilion, docId) {
+            const listItem = document.createElement('li');
+            listItem.className = 'wishlist-card'; // 新しいCSSクラス
+            const { areaMap } = ExpoApp.config;
+            const location = `${areaMap[pavilion.area] || 'その他'}ゾーン / ${pavilion.building || 'N/A'}`;
+            const imageUrl = pavilion.imageFile 
+                ? `/images/${pavilion.imageFile}`
+                : `https://placehold.jp/30/cccccc/ffffff/200x120.png?text=${encodeURIComponent(pavilion.name)}`;
+
+            listItem.innerHTML = `
+                <img src="${imageUrl}" alt="${pavilion.name}" class="wishlist-card-image">
+                <div class="info">
+                    <h3>${pavilion.name}</h3>
+                    <p><strong>場所:</strong> ${location}</p>
+                    <p><strong>所要時間:</strong> 約${pavilion.duration || 'N/A'}分</p>
+                </div>
+                <div class="actions">
+                    <button class="move-to-history-btn" data-pavilion-name="${pavilion.name}">履歴に追加</button>
+                    <button class="delete-wish-btn" data-id="${docId}">削除</button>
+                </div>
+            `;
+            return listItem;
+        },
+        // ★★★ ここまで追加 ★★★
         openVisitModal(pavilionName) {
-            if (!ExpoApp.state.currentUser) { return alert("ログインしてください。"); }
+            if (!ExpoApp.state.currentUser) return alert("ログインしてください。");
             const form = ExpoApp.elements.visitForm;
             form.reset();
             form.querySelector('#pavilion-name').value = pavilionName;
