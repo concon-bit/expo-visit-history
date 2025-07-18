@@ -2,12 +2,10 @@
 // Firebase SDKのインポートと初期化
 // =================================================================================
 
-// npmでインストールしたfirebaseライブラリから各機能をインポート
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, doc, deleteDoc, where, getDoc, updateDoc } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 
-// .envファイルから安全に設定情報を読み込む
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -17,7 +15,6 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Firebaseアプリを初期化
 const firebaseApp = initializeApp(firebaseConfig);
 const firestoreDB = getFirestore(firebaseApp);
 const firebaseAuth = getAuth(firebaseApp);
@@ -39,19 +36,10 @@ const ExpoApp = {
         areaMap: { "signature": "シグネチャー", "empowering": "いのちを育む", "future": "未来の社会", "saving": "いのちを守る", "co-creation": "共創", "water": "ウォーターワールド" }
     },
     elements: {
-        searchInput: null, pavilionList: null, paginationContainer: null,
-        visitHistoryList: null,
+        searchInput: null, pavilionList: null, paginationContainer: null, visitForm: null, visitHistoryList: null,
         pavilionsView: null, historyView: null, showPavilionsBtn: null, showHistoryBtn: null,
         loginBtn: null, logoutBtn: null, userInfo: null,
-        // ↓↓↓ 追加・修正 ↓↓↓
-        visitModal: null,           // モーダル全体のオーバーレイ
-        visitForm: null,            // モーダル内のフォーム
-        modalCloseBtn: null,        // モーダルを閉じるボタン
-        pavilionNameInput: null,    // フォーム内のパビリオン名入力欄
-        visitDateInput: null,       // フォーム内の訪問日入力欄
-        waitTimeInput: null,        // フォーム内の待ち時間入力欄
-        reviewTextInput: null       // フォーム内のレビュー入力欄
-        // ↑↑↑ 追加・修正 ↑↑↑
+        visitModal: null, editModal: null, editForm: null,
     },
     async initialize() {
         this.cacheDOMElements();
@@ -67,27 +55,22 @@ const ExpoApp = {
         }
     },
     cacheDOMElements() {
-        this.elements.searchInput = document.getElementById('searchInput');
-        this.elements.pavilionList = document.getElementById('pavilionList');
-        this.elements.paginationContainer = document.getElementById('pagination-container');
-        this.elements.visitHistoryList = document.getElementById('visit-history');
-        this.elements.pavilionsView = document.getElementById('pavilions-view');
-        this.elements.historyView = document.getElementById('history-view');
-        this.elements.showPavilionsBtn = document.getElementById('show-pavilions-view');
-        this.elements.showHistoryBtn = document.getElementById('show-history-view');
-        this.elements.loginBtn = document.getElementById('login-btn');
-        this.elements.logoutBtn = document.getElementById('logout-btn');
-        this.elements.userInfo = document.getElementById('user-info');
-
-        // ↓↓↓ 追加・修正 ↓↓↓
-        this.elements.visitModal = document.getElementById('visit-modal');
-        this.elements.visitForm = document.getElementById('visit-form'); // モーダル内のフォーム
-        this.elements.modalCloseBtn = this.elements.visitModal.querySelector('.modal-close-btn');
-        this.elements.pavilionNameInput = this.elements.visitForm.querySelector('#pavilion-name');
-        this.elements.visitDateInput = this.elements.visitForm.querySelector('#visit-date');
-        this.elements.waitTimeInput = this.elements.visitForm.querySelector('#wait-time');
-        this.elements.reviewTextInput = this.elements.visitForm.querySelector('#review-text');
-        // ↑↑↑ 追加・修正 ↑↑↑
+        const D = document;
+        this.elements.searchInput = D.getElementById('searchInput');
+        this.elements.pavilionList = D.getElementById('pavilionList');
+        this.elements.paginationContainer = D.getElementById('pagination-container');
+        this.elements.visitHistoryList = D.getElementById('visit-history');
+        this.elements.pavilionsView = D.getElementById('pavilions-view');
+        this.elements.historyView = D.getElementById('history-view');
+        this.elements.showPavilionsBtn = D.getElementById('show-pavilions-view');
+        this.elements.showHistoryBtn = D.getElementById('show-history-view');
+        this.elements.loginBtn = D.getElementById('login-btn');
+        this.elements.logoutBtn = D.getElementById('logout-btn');
+        this.elements.userInfo = D.getElementById('user-info');
+        this.elements.visitModal = D.getElementById('visit-modal');
+        this.elements.visitForm = D.getElementById('visit-form');
+        this.elements.editModal = D.getElementById('edit-modal');
+        this.elements.editForm = D.getElementById('edit-form');
     },
     addEventListeners() {
         this.elements.showPavilionsBtn.addEventListener('click', () => ExpoApp.ui.switchView('pavilions'));
@@ -98,25 +81,27 @@ const ExpoApp = {
         this.elements.visitHistoryList.addEventListener('click', (event) => ExpoApp.handlers.handleHistoryItemClick(event));
         this.elements.loginBtn.addEventListener('click', () => ExpoApp.handlers.handleLogin());
         this.elements.logoutBtn.addEventListener('click', () => ExpoApp.handlers.handleLogout());
-
-        // ↓↓↓ 追加・修正 ↓↓↓
-        this.elements.modalCloseBtn.addEventListener('click', () => ExpoApp.ui.closeVisitModal());
-        // モーダルオーバーレイをクリックで閉じる
-        this.elements.visitModal.addEventListener('click', (event) => {
-            if (event.target === ExpoApp.elements.visitModal) {
+        this.elements.visitModal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) {
                 ExpoApp.ui.closeVisitModal();
             }
         });
-        // ↑↑↑ 追加・修正 ↑↑↑
+        this.elements.editModal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) {
+                ExpoApp.ui.closeEditModal();
+            }
+        });
+        this.elements.editForm.addEventListener('submit', (event) => ExpoApp.handlers.handleEditFormSubmit(event));
     },
     setupAuthObserver() {
         onAuthStateChanged(firebaseAuth, user => {
             ExpoApp.state.currentUser = user;
             ExpoApp.ui.updateLoginStatus();
-            // 履歴タブ表示時に renderVisitHistory が呼ばれるので、ここでは不要
-            // ExpoApp.ui.renderVisitHistory(); 
+            ExpoApp.ui.renderVisitHistory();
         });
     },
+
+    // ★★★ 修正：削除されていたapiオブジェクトを復元 ★★★
     api: {
         async fetchPavilions() {
             const response = await fetch('/pavilions.json');
@@ -126,6 +111,8 @@ const ExpoApp = {
             return await response.json();
         }
     },
+    // ★★★ ここまで ★★★
+
     handlers: {
         handleSearchInput(event) {
             const searchTerm = event.target.value.toLowerCase();
@@ -139,73 +126,74 @@ const ExpoApp = {
         handlePavilionClick(event) {
             if (event.target.classList.contains('add-to-history-btn')) {
                 const pavilionName = event.target.dataset.pavilionName;
-                
-                // ↓↓↓ フォームではなくモーダルを開く ↓↓↓
                 ExpoApp.ui.openVisitModal(pavilionName);
-                // ↑↑↑ フォームではなくモーダルを開く ↑↑↑
             }
         },
         async handleVisitFormSubmit(event) {
             event.preventDefault();
-            if (!ExpoApp.state.currentUser) {
-                alert("履歴を保存するには、まずログインしてください。");
-                return;
-            }
-            // form要素全体ではなく、各入力フィールドをelementsから参照
+            if (!ExpoApp.state.currentUser) { return alert("ログインしてください。"); }
+            const form = ExpoApp.elements.visitForm;
             const visitData = {
                 userId: ExpoApp.state.currentUser.uid,
-                name: ExpoApp.elements.pavilionNameInput.value,
-                date: ExpoApp.elements.visitDateInput.value,
-                waitTime: ExpoApp.elements.waitTimeInput.value,
-                review: ExpoApp.elements.reviewTextInput.value,
+                name: form.querySelector('#pavilion-name').value,
+                date: form.querySelector('#visit-date').value,
+                waitTime: form.querySelector('#wait-time').value,
+                review: form.querySelector('#review-text').value,
                 createdAt: new Date()
             };
             if (visitData.name && visitData.date) {
                 try {
                     await addDoc(collection(firestoreDB, "visits"), visitData);
-                    ExpoApp.elements.visitForm.reset(); // フォームをリセット
-                    ExpoApp.ui.closeVisitModal(); // モーダルを閉じる
-                    ExpoApp.ui.renderVisitHistory(); // 履歴を再描画
-                    alert('履歴をデータベースに保存しました！');
-                } catch (error) {
-                    console.error("データの保存に失敗しました:", error);
-                    alert('データの保存に失敗しました。');
-                }
-            } else {
-                alert('パビリオン名と訪問日は必須です。');
+                    ExpoApp.ui.closeVisitModal();
+                    ExpoApp.ui.renderVisitHistory();
+                } catch (error) { console.error("データの保存に失敗:", error); }
             }
         },
-        async handleHistoryItemClick(event) {
-            if (event.target.classList.contains('delete-button')) {
-                if (!ExpoApp.state.currentUser) { return; }
-                const documentId = event.target.dataset.id;
-                if (confirm('この履歴を本当に削除しますか？')) {
-                    try {
-                        await deleteDoc(doc(firestoreDB, "visits", documentId));
-                        alert('履歴を削除しました。');
-                        ExpoApp.ui.renderVisitHistory();
-                    } catch (error) {
-                        console.error("削除に失敗しました:", error);
-                    }
-                }
+        async handleEditFormSubmit(event) {
+            event.preventDefault();
+            const form = ExpoApp.elements.editForm;
+            const docId = form.querySelector('#edit-doc-id').value;
+            if (!docId) return;
+            const updatedData = {
+                date: form.querySelector('#edit-visit-date').value,
+                waitTime: form.querySelector('#edit-wait-time').value,
+                review: form.querySelector('#edit-review-text').value,
+            };
+            try {
+                await updateDoc(doc(firestoreDB, "visits", docId), updatedData);
+                ExpoApp.ui.closeEditModal();
+                ExpoApp.ui.renderVisitHistory();
+            } catch (error) {
+                console.error("履歴の更新に失敗:", error);
+                alert("エラー：履歴の更新に失敗しました。");
+            }
+        },
+        handleHistoryItemClick(event) {
+            const target = event.target;
+            if (target.classList.contains('delete-button')) {
+                ExpoApp.handlers.handleDeleteHistory(target.dataset.id);
+            }
+            if (target.classList.contains('edit-button')) {
+                ExpoApp.ui.openEditModal(target.dataset.id);
+            }
+        },
+        async handleDeleteHistory(docId) {
+            if (!ExpoApp.state.currentUser) return;
+            if (confirm('この履歴を本当に削除しますか？')) {
+                try {
+                    await deleteDoc(doc(firestoreDB, "visits", docId));
+                    ExpoApp.ui.renderVisitHistory();
+                } catch (error) { console.error("削除に失敗:", error); }
             }
         },
         async handleLogin() {
             const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(firebaseAuth, provider);
-            } catch (error) {
-                console.error("ログインエラー", error);
-                alert("ログインに失敗しました。");
-            }
+            try { await signInWithPopup(firebaseAuth, provider); }
+            catch (error) { console.error("ログインエラー", error); }
         },
         async handleLogout() {
-            try {
-                await signOut(firebaseAuth);
-            } catch (error) {
-                console.error("ログアウトエラー", error);
-                alert("ログアウトに失敗しました。");
-            }
+            try { await signOut(firebaseAuth); }
+            catch (error) { console.error("ログアウトエラー", error); }
         },
     },
     ui: {
@@ -228,7 +216,6 @@ const ExpoApp = {
             historyView.style.display = isHistoryView ? 'block' : 'none';
             showPavilionsBtn.classList.toggle('active', !isHistoryView);
             showHistoryBtn.classList.toggle('active', isHistoryView);
-            // 履歴タブに切り替わった時のみ履歴をレンダリングする
             if (isHistoryView) { ExpoApp.ui.renderVisitHistory(); }
         },
         renderPavilions() {
@@ -298,66 +285,73 @@ const ExpoApp = {
         async renderVisitHistory() {
             const { visitHistoryList } = ExpoApp.elements;
             const user = ExpoApp.state.currentUser;
-            console.log("renderVisitHistory called. User:", user ? user.uid : "No user");
             if (!user) {
-                visitHistoryList.innerHTML = '<p style="text-align: center; color: #6c757d;">ログインすると、あなたの訪問履歴が表示されます。</p>';
+                visitHistoryList.innerHTML = '<p style="text-align: center;">ログインすると履歴が表示されます。</p>';
                 return;
             }
-            visitHistoryList.innerHTML = '<p style="text-align: center; color: #6c757d;">データを読み込み中...</p>';
-            try {
-                const historyQuery = query(collection(firestoreDB, "visits"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(historyQuery);
-                const visits = [];
-                console.log("Query Snapshot size:", querySnapshot.size);
-                querySnapshot.forEach((doc) => {
-                    visits.push({ id: doc.id, ...doc.data() });
-                    console.log("Fetched visit:", doc.data());
-                });
-                console.log("Total visits fetched:", visits.length);
-
-                visitHistoryList.innerHTML = '';
-                if (visits.length === 0) {
-                    visitHistoryList.innerHTML = '<p style="text-align: center; color: #6c757d;">まだ訪問履歴がありません。</p>';
-                    return;
-                }
-                const fragment = document.createDocumentFragment();
-                visits.forEach(visit => {
-                    const historyItem = document.createElement('li');
-                    historyItem.className = 'history-card';
-                    historyItem.innerHTML = `
-                        <div class="info">
-                            <strong>${visit.name}</strong><span class="date">${visit.date}</span>
-                            <p class="details">${visit.waitTime ? `待ち時間: <strong>${visit.waitTime}</strong>分` : ''}</p>
-                            ${visit.review ? `<p class="review">${visit.review}</p>` : ''}
-                        </div>
-                        <button class="delete-button" data-id="${visit.id}">削除</button>`;
-                    fragment.appendChild(historyItem);
-                });
-                visitHistoryList.appendChild(fragment);
-            } catch (error) {
-                console.error("履歴の読み込みに失敗しました:", error);
-                visitHistoryList.innerHTML = '<p style="text-align: center; color: #dc3545;">履歴の読み込み中にエラーが発生しました。</p>';
+            visitHistoryList.innerHTML = '<p style="text-align: center;">データを読み込み中...</p>';
+            const q = query(collection(firestoreDB, "visits"), where("userId", "==", user.uid), orderBy("createdAt", "desc"));
+            const querySnapshot = await getDocs(q);
+            const visits = [];
+            querySnapshot.forEach((doc) => visits.push({ id: doc.id, ...doc.data() }));
+            visitHistoryList.innerHTML = '';
+            if (visits.length === 0) {
+                visitHistoryList.innerHTML = '<p style="text-align: center;">まだ訪問履歴がありません。</p>';
+                return;
             }
+            const fragment = document.createDocumentFragment();
+            visits.forEach(visit => {
+                const historyItem = document.createElement('li');
+                historyItem.className = 'history-card';
+                historyItem.innerHTML = `
+                    <div class="info">
+                        <strong>${visit.name}</strong><span class="date">${visit.date}</span>
+                        <p class="details">${visit.waitTime ? `待ち時間: <strong>${visit.waitTime}</strong>分` : ''}</p>
+                        ${visit.review ? `<p class="review">${visit.review}</p>` : ''}
+                    </div>
+                    <div class="actions">
+                        <button class="edit-button" data-id="${visit.id}">編集</button>
+                        <button class="delete-button" data-id="${visit.id}">削除</button>
+                    </div>`;
+                fragment.appendChild(historyItem);
+            });
+            visitHistoryList.appendChild(fragment);
         },
-        // ↓↓↓ 追加・修正 ↓↓↓
-        openVisitModal(pavilionName = '') {
-            // ログインしていない場合はモーダルを開かずにリターンする
-            if (!ExpoApp.state.currentUser) {
-                alert("履歴を追加するには、まずログインしてください。");
-                return; // ここで処理を終了
-            }
-            ExpoApp.elements.pavilionNameInput.value = pavilionName;
-            ExpoApp.elements.visitDateInput.valueAsDate = new Date(); // 今日の日付を自動入力
-            ExpoApp.elements.waitTimeInput.value = ''; // 待ち時間をクリア
-            ExpoApp.elements.reviewTextInput.value = ''; // レビューをクリア
-            ExpoApp.elements.visitModal.style.display = 'flex'; // ポップアップを表示
-            ExpoApp.elements.waitTimeInput.focus(); // 待ち時間入力欄にフォーカス
+        openVisitModal(pavilionName) {
+            if (!ExpoApp.state.currentUser) { return alert("ログインしてください。"); }
+            const form = ExpoApp.elements.visitForm;
+            form.reset();
+            form.querySelector('#pavilion-name').value = pavilionName;
+            form.querySelector('#visit-date').valueAsDate = new Date();
+            ExpoApp.elements.visitModal.style.display = 'flex';
+            form.querySelector('#wait-time').focus();
         },
         closeVisitModal() {
-            ExpoApp.elements.visitModal.style.display = 'none'; // ポップアップを非表示
-            ExpoApp.elements.visitForm.reset(); // フォームの内容をリセット
+            ExpoApp.elements.visitModal.style.display = 'none';
+        },
+        async openEditModal(docId) {
+            try {
+                const docRef = doc(firestoreDB, "visits", docId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const form = ExpoApp.elements.editForm;
+                    form.querySelector('#edit-doc-id').value = docId;
+                    form.querySelector('#edit-pavilion-name').value = data.name;
+                    form.querySelector('#edit-visit-date').value = data.date;
+                    form.querySelector('#edit-wait-time').value = data.waitTime;
+                    form.querySelector('#edit-review-text').value = data.review;
+                    ExpoApp.elements.editModal.style.display = 'flex';
+                } else {
+                    alert("編集対象のデータが見つかりませんでした。");
+                }
+            } catch (error) {
+                console.error("データ取得中にエラー:", error);
+            }
+        },
+        closeEditModal() {
+            ExpoApp.elements.editModal.style.display = 'none';
         }
-        // ↑↑↑ 追加・修正 ↑↑↑
     },
 };
 
