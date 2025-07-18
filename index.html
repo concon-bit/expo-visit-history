@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>万博訪問履歴管理アプリ</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="./style.css">
 </head>
 
@@ -19,22 +17,20 @@
                 <span class="title-expo">EXPO</span><span class="title-2025">2025</span>
                 <span class="title-subtitle">訪問履歴</span>
             </div>
-            <div id="conquest-counter" class="conquest-counter"></div>
-        </h1>
+            </h1>
         <div id="auth-container">
-            <div id="user-info">
-                </div>
+            <div id="user-info"></div>
             <button id="login-btn">ログイン</button>
-            
             <div id="account-popup" class="account-popup">
-                <div id="popup-user-info" class="popup-user-info">
-                    </div>
+                <div id="popup-user-info" class="popup-user-info"></div>
                 <button id="popup-logout-btn" class="popup-logout-btn">ログアウト</button>
             </div>
         </div>
     </header>
 
     <main>
+        <div id="conquest-counter" class="conquest-counter"></div>
+
         <div class="view-switcher">
             <button id="show-pavilions-view" class="active">パビリオン一覧</button>
             <button id="show-wishlist-view">行きたいリスト</button>
@@ -69,55 +65,29 @@
             <button class="modal-close-btn" aria-label="閉じる">&times;</button>
             <h2 id="visit-modal-title">履歴を追加</h2>
             <form id="visit-form">
-                <div class="form-group">
-                    <label for="pavilion-name">パビリオン名:</label>
-                    <input type="text" id="pavilion-name" required readonly>
-                </div>
-                <div class="form-group">
-                    <label for="visit-date">訪問日:</label>
-                    <input type="date" id="visit-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="wait-time">待ち時間 (分):</label>
-                    <input type="number" id="wait-time" placeholder="例: 60">
-                </div>
-                <div class="form-group">
-                    <label for="review-text">レビュー:</label>
-                    <textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea>
-                </div>
+                <div class="form-group"><label for="pavilion-name">パビリオン名:</label><input type="text" id="pavilion-name" required readonly></div>
+                <div class="form-group"><label for="visit-date">訪問日:</label><input type="date" id="visit-date" required></div>
+                <div class="form-group"><label for="wait-time">待ち時間 (分):</label><input type="number" id="wait-time" placeholder="例: 60"></div>
+                <div class="form-group"><label for="review-text">レビュー:</label><textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea></div>
                 <button type="submit">履歴に保存する</button>
             </form>
         </div>
     </div>
-
     <div id="edit-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
         <div class="modal-content">
             <button class="modal-close-btn" aria-label="閉じる">&times;</button>
             <h2 id="edit-modal-title">履歴を編集</h2>
             <form id="edit-form">
                 <input type="hidden" id="edit-doc-id">
-                <div class="form-group">
-                    <label for="edit-pavilion-name">パビリオン名:</label>
-                    <input type="text" id="edit-pavilion-name" required readonly>
-                </div>
-                <div class="form-group">
-                    <label for="edit-visit-date">訪問日:</label>
-                    <input type="date" id="edit-visit-date" required>
-                </div>
-                <div class="form-group">
-                    <label for="edit-wait-time">待ち時間 (分):</label>
-                    <input type="number" id="edit-wait-time" placeholder="例: 60">
-                </div>
-                <div class="form-group">
-                    <label for="edit-review-text">レビュー:</label>
-                    <textarea id="edit-review-text" rows="4" placeholder="感想などを記入"></textarea>
-                </div>
+                <div class="form-group"><label for="edit-pavilion-name">パビリオン名:</label><input type="text" id="edit-pavilion-name" required readonly></div>
+                <div class="form-group"><label for="edit-visit-date">訪問日:</label><input type="date" id="edit-visit-date" required></div>
+                <div class="form-group"><label for="edit-wait-time">待ち時間 (分):</label><input type="number" id="edit-wait-time" placeholder="例: 60"></div>
+                <div class="form-group"><label for="edit-review-text">レビュー:</label><textarea id="edit-review-text" rows="4" placeholder="感想などを記入"></textarea></div>
                 <button type="submit">変更を保存する</button>
             </form>
         </div>
     </div>
 
     <script type="module" src="/main.js"></script>
-
 </body>
 </html>
