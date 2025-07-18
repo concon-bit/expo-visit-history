@@ -9,15 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
     <header>
         <h1>
+            <img src="/images/myakumyaku.png" alt="ミャクミャク" class="myakumyaku-logo">
             <div class="main-title">
-                <span class="title-expo">EXPO</span><span class="title-2025">2025</span>
+                <div>
+                    <span class="title-expo">EXPO</span><span class="title-2025">2025</span>
+                </div>
                 <span class="title-subtitle">訪問履歴</span>
             </div>
-            </h1>
+        </h1>
         <div id="auth-container">
             <div id="user-info"></div>
             <button id="login-btn">ログイン</button>
@@ -30,14 +32,37 @@
 
     <main>
         <div id="conquest-counter" class="conquest-counter"></div>
-
         <div class="view-switcher">
             <button id="show-pavilions-view" class="active">パビリオン一覧</button>
             <button id="show-wishlist-view">行きたいリスト</button>
             <button id="show-history-view">訪問履歴</button>
         </div>
-
         <div id="pavilions-view">
+            <section id="filter-section" class="filter-container">
+                <div class="filter-item">
+                    <label for="area-filter">エリアで絞り込み:</label>
+                    <select id="area-filter">
+                        <option value="all">すべてのエリア</option>
+                        </select>
+                </div>
+                <div class="filter-item">
+                    <label for="reservation-filter">予約：</label>
+                    <select id="reservation-filter">
+                        <option value="all">すべて</option>
+                        <option value="required">要予約のみ</option>
+                        <option value="not_required">予約不要のみ</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="sort-by">並べ替え:</label>
+                    <select id="sort-by">
+                        <option value="default">デフォルト</option>
+                        <option value="duration_asc">所要時間 (短い順)</option>
+                        <option value="duration_desc">所要時間 (長い順)</option>
+                    </select>
+                </div>
+            </section>
+            
             <section id="search-section">
                 <input type="text" id="searchInput" placeholder="パビリオン名、愛称などで検索...">
             </section>
@@ -67,6 +92,12 @@
             <form id="visit-form">
                 <div class="form-group"><label for="pavilion-name">パビリオン名:</label><input type="text" id="pavilion-name" required readonly></div>
                 <div class="form-group"><label for="visit-date">訪問日:</label><input type="date" id="visit-date" required></div>
+                <div class="form-group">
+                    <label>評価:</label>
+                    <div class="star-rating-input" data-rating="0">
+                        <span data-value="1">★</span><span data-value="2">★</span><span data-value="3">★</span><span data-value="4">★</span><span data-value="5">★</span>
+                    </div>
+                </div>
                 <div class="form-group"><label for="wait-time">待ち時間 (分):</label><input type="number" id="wait-time" placeholder="例: 60"></div>
                 <div class="form-group"><label for="review-text">レビュー:</label><textarea id="review-text" rows="4" placeholder="感想などを記入"></textarea></div>
                 <button type="submit">履歴に保存する</button>
@@ -81,6 +112,12 @@
                 <input type="hidden" id="edit-doc-id">
                 <div class="form-group"><label for="edit-pavilion-name">パビリオン名:</label><input type="text" id="edit-pavilion-name" required readonly></div>
                 <div class="form-group"><label for="edit-visit-date">訪問日:</label><input type="date" id="edit-visit-date" required></div>
+                <div class="form-group">
+                    <label>評価:</label>
+                    <div id="edit-star-rating" class="star-rating-input" data-rating="0">
+                        <span data-value="1">★</span><span data-value="2">★</span><span data-value="3">★</span><span data-value="4">★</span><span data-value="5">★</span>
+                    </div>
+                </div>
                 <div class="form-group"><label for="edit-wait-time">待ち時間 (分):</label><input type="number" id="edit-wait-time" placeholder="例: 60"></div>
                 <div class="form-group"><label for="edit-review-text">レビュー:</label><textarea id="edit-review-text" rows="4" placeholder="感想などを記入"></textarea></div>
                 <button type="submit">変更を保存する</button>

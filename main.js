@@ -23,10 +23,7 @@ const firebaseAuth = getAuth(firebaseApp);
 // =================================================================================
 const ExpoApp = {
     constants: {
-        COLLECTIONS: {
-            VISITS: 'visits',
-            WISHES: 'wishes',
-        }
+        COLLECTIONS: { VISITS: 'visits', WISHES: 'wishes' }
     },
     state: {
         allPavilions: [],
@@ -35,6 +32,7 @@ const ExpoApp = {
         currentPage: 1,
         currentUser: null,
         visitCount: 0,
+        filters: { area: 'all', reservation: 'all', sortBy: 'default' },
     },
     config: {
         itemsPerPage: 20,
@@ -48,9 +46,8 @@ const ExpoApp = {
         this.setupAuthObserver();
         try {
             this.state.allPavilions = await this.api.fetchPavilions();
-            this.state.filteredPavilions = [...this.state.allPavilions];
-            this.ui.renderPavilions();
-            this.ui.updateConquestCounter();
+            this.ui.populateAreaFilter();
+            this.ui.applyFiltersAndSort();
         } catch (error) {
             console.error("パビリオンデータの読み込みに失敗しました:", error);
         }
@@ -59,27 +56,14 @@ const ExpoApp = {
     cacheDOMElements() {
         const D = document;
         this.elements = {
-            pavilionsView: D.getElementById('pavilions-view'),
-            historyView: D.getElementById('history-view'),
-            wishlistView: D.getElementById('wishlist-view'),
-            showPavilionsBtn: D.getElementById('show-pavilions-view'),
-            showHistoryBtn: D.getElementById('show-history-view'),
-            showWishlistBtn: D.getElementById('show-wishlist-view'),
-            loginBtn: D.getElementById('login-btn'),
-            pavilionList: D.getElementById('pavilionList'),
-            visitHistoryList: D.getElementById('visit-history'),
-            wishlistList: D.getElementById('wishlist'),
-            paginationContainer: D.getElementById('pagination-container'),
-            searchInput: D.getElementById('searchInput'),
-            visitModal: D.getElementById('visit-modal'),
-            visitForm: D.getElementById('visit-form'),
-            editModal: D.getElementById('edit-modal'),
-            editForm: D.getElementById('edit-form'),
-            userInfo: D.getElementById('user-info'),
-            conquestCounter: D.getElementById('conquest-counter'),
-            accountPopup: D.getElementById('account-popup'),
-            popupUserInfo: D.getElementById('popup-user-info'),
-            popupLogoutBtn: D.getElementById('popup-logout-btn'),
+            pavilionsView: D.getElementById('pavilions-view'), historyView: D.getElementById('history-view'), wishlistView: D.getElementById('wishlist-view'),
+            showPavilionsBtn: D.getElementById('show-pavilions-view'), showHistoryBtn: D.getElementById('show-history-view'), showWishlistBtn: D.getElementById('show-wishlist-view'),
+            loginBtn: D.getElementById('login-btn'), pavilionList: D.getElementById('pavilionList'), visitHistoryList: D.getElementById('visit-history'),
+            wishlistList: D.getElementById('wishlist'), paginationContainer: D.getElementById('pagination-container'), searchInput: D.getElementById('searchInput'),
+            visitModal: D.getElementById('visit-modal'), visitForm: D.getElementById('visit-form'), editModal: D.getElementById('edit-modal'),
+            editForm: D.getElementById('edit-form'), userInfo: D.getElementById('user-info'), conquestCounter: D.getElementById('conquest-counter'),
+            accountPopup: D.getElementById('account-popup'), popupUserInfo: D.getElementById('popup-user-info'), popupLogoutBtn: D.getElementById('popup-logout-btn'),
+            areaFilter: D.getElementById('area-filter'), reservationFilter: D.getElementById('reservation-filter'), sortBy: D.getElementById('sort-by'),
         };
     },
 
@@ -88,34 +72,45 @@ const ExpoApp = {
         elements.showPavilionsBtn.addEventListener('click', () => ExpoApp.ui.switchView('pavilions'));
         elements.showWishlistBtn.addEventListener('click', () => ExpoApp.ui.switchView('wishlist'));
         elements.showHistoryBtn.addEventListener('click', () => ExpoApp.ui.switchView('history'));
-        elements.searchInput.addEventListener('input', (event) => ExpoApp.handlers.handleSearchInput(event));
-        elements.pavilionList.addEventListener('click', (event) => ExpoApp.handlers.handlePavilionClick(event));
-        elements.visitHistoryList.addEventListener('click', (event) => ExpoApp.handlers.handleHistoryItemClick(event));
-        elements.wishlistList.addEventListener('click', (event) => ExpoApp.handlers.handleWishlistItemClick(event));
+        elements.searchInput.addEventListener('input', (e) => ExpoApp.handlers.handleSearchInput(e));
+        elements.pavilionList.addEventListener('click', (e) => ExpoApp.handlers.handlePavilionClick(e));
+        elements.visitHistoryList.addEventListener('click', (e) => ExpoApp.handlers.handleHistoryItemClick(e));
+        elements.wishlistList.addEventListener('click', (e) => ExpoApp.handlers.handleWishlistItemClick(e));
         elements.loginBtn.addEventListener('click', () => ExpoApp.handlers.handleLogin());
-        elements.userInfo.addEventListener('click', (event) => {
-            event.stopPropagation();
-            ExpoApp.ui.toggleAccountPopup();
-        });
+        elements.userInfo.addEventListener('click', (e) => { e.stopPropagation(); ExpoApp.ui.toggleAccountPopup(); });
         elements.popupLogoutBtn.addEventListener('click', () => ExpoApp.handlers.handleLogout());
-        document.addEventListener('click', (event) => {
-            if (elements.accountPopup && !elements.accountPopup.contains(event.target) && !elements.userInfo.contains(event.target)) {
+        document.addEventListener('click', (e) => {
+            if (elements.accountPopup && !elements.accountPopup.contains(e.target) && !elements.userInfo.contains(e.target)) {
                 ExpoApp.ui.toggleAccountPopup(false);
             }
         });
-        elements.visitForm.addEventListener('submit', (event) => ExpoApp.handlers.handleVisitFormSubmit(event));
-        elements.editForm.addEventListener('submit', (event) => ExpoApp.handlers.handleEditFormSubmit(event));
-        const closeModalHandler = (modal) => (event) => {
-            if (event.target.classList.contains('modal-overlay') || event.target.classList.contains('modal-close-btn')) {
-                modal.style.display = 'none';
-            }
-        };
+        elements.visitForm.addEventListener('submit', (e) => ExpoApp.handlers.handleVisitFormSubmit(e));
+        elements.editForm.addEventListener('submit', (e) => ExpoApp.handlers.handleEditFormSubmit(e));
+        const closeModalHandler = (modal) => (e) => { if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('modal-close-btn')) modal.style.display = 'none'; };
         elements.visitModal.addEventListener('click', closeModalHandler(elements.visitModal));
         elements.editModal.addEventListener('click', closeModalHandler(elements.editModal));
+        elements.areaFilter.addEventListener('change', () => { ExpoApp.state.filters.area = ExpoApp.elements.areaFilter.value; ExpoApp.ui.applyFiltersAndSort(); });
+        elements.reservationFilter.addEventListener('change', () => { ExpoApp.state.filters.reservation = ExpoApp.elements.reservationFilter.value; ExpoApp.ui.applyFiltersAndSort(); });
+        elements.sortBy.addEventListener('change', () => { ExpoApp.state.filters.sortBy = ExpoApp.elements.sortBy.value; ExpoApp.ui.applyFiltersAndSort(); });
+        const setupStarRating = (container) => {
+            container.addEventListener('click', e => { if (e.target.matches('span')) container.dataset.rating = e.target.dataset.value; });
+            container.addEventListener('mouseover', e => {
+                if (e.target.matches('span')) {
+                    const ratingValue = e.target.dataset.value;
+                    container.querySelectorAll('span').forEach(star => { star.style.color = star.dataset.value <= ratingValue ? 'var(--star-color)' : 'var(--border-color)'; });
+                }
+            });
+            container.addEventListener('mouseout', () => {
+                const rating = container.dataset.rating;
+                container.querySelectorAll('span').forEach(star => { star.style.color = star.dataset.value <= rating ? 'var(--star-color)' : 'var(--border-color)'; });
+            });
+        };
+        setupStarRating(elements.visitForm.querySelector('.star-rating-input'));
+        setupStarRating(elements.editForm.querySelector('.star-rating-input'));
     },
 
     setupAuthObserver() {
-        onAuthStateChanged(firebaseAuth, (user) => {
+        onAuthStateChanged(firebaseAuth, user => {
             ExpoApp.state.currentUser = user;
             ExpoApp.ui.updateLoginStatus();
             ExpoApp.ui.renderVisitHistory();
@@ -143,64 +138,48 @@ const ExpoApp = {
             try {
                 await setPersistence(firebaseAuth, browserLocalPersistence);
                 await signInWithPopup(firebaseAuth, new GoogleAuthProvider());
-            } catch (error) {
-                console.error("ログインエラー", error);
-            }
+            } catch (error) { console.error("ログインエラー", error); }
         },
         async handleLogout() {
             try {
                 await signOut(firebaseAuth);
                 ExpoApp.ui.toggleAccountPopup(false);
-            } catch (error) {
-                console.error("ログアウトエラー", error);
-            }
+            } catch (error) { console.error("ログアウトエラー", error); }
         },
         handleSearchInput(event) {
-            const searchTerm = event.target.value.toLowerCase();
-            ExpoApp.state.filteredPavilions = ExpoApp.state.allPavilions.filter(p =>
-                p.name.toLowerCase().includes(searchTerm) || p.searchTags?.some(t => t.toLowerCase().includes(searchTerm))
-            );
-            ExpoApp.state.currentPage = 1;
-            ExpoApp.ui.renderPavilions();
+            ExpoApp.state.filters.area = 'all';
+            ExpoApp.state.filters.reservation = 'all';
+            ExpoApp.state.filters.sortBy = 'default';
+            ExpoApp.elements.areaFilter.value = 'all';
+            ExpoApp.elements.reservationFilter.value = 'all';
+            ExpoApp.elements.sortBy.value = 'default';
+            ExpoApp.ui.applyFiltersAndSort(event.target.value);
         },
         handlePavilionClick(event) {
             const pavilionName = event.target.dataset.pavilionName;
-            if (event.target.classList.contains("add-to-history-btn")) {
-                ExpoApp.ui.openVisitModal(pavilionName);
-            }
-            if (event.target.classList.contains("add-to-wishlist-btn")) {
-                ExpoApp.handlers.handleAddWish(pavilionName);
-            }
+            if (event.target.classList.contains("add-to-history-btn")) ExpoApp.ui.openVisitModal(pavilionName);
+            if (event.target.classList.contains("add-to-wishlist-btn")) ExpoApp.handlers.handleAddWish(pavilionName);
         },
         handleHistoryItemClick(event) {
             const docId = event.target.dataset.id;
-            if (event.target.classList.contains("delete-button")) {
-                ExpoApp.handlers.handleDeleteHistory(docId);
-            }
-            if (event.target.classList.contains("edit-button")) {
-                ExpoApp.ui.openEditModal(docId);
-            }
+            if (event.target.classList.contains("delete-button")) ExpoApp.handlers.handleDeleteHistory(docId);
+            if (event.target.classList.contains("edit-button")) ExpoApp.ui.openEditModal(docId);
         },
         handleWishlistItemClick(event) {
             const pavilionName = event.target.dataset.pavilionName;
-            if (event.target.classList.contains("delete-wish-btn")) {
-                ExpoApp.handlers.handleDeleteWish(event.target.dataset.id);
-            }
-            if (event.target.classList.contains("move-to-history-btn")) {
-                ExpoApp.ui.openVisitModal(pavilionName);
-            }
+            if (event.target.classList.contains("delete-wish-btn")) ExpoApp.handlers.handleDeleteWish(event.target.dataset.id);
+            if (event.target.classList.contains("move-to-history-btn")) ExpoApp.ui.openVisitModal(pavilionName);
         },
         async handleVisitFormSubmit(event) {
             event.preventDefault();
             const { currentUser } = ExpoApp.state;
             if (!currentUser) return alert("ログインしてください。");
             const form = ExpoApp.elements.visitForm;
+            const rating = form.querySelector('.star-rating-input').dataset.rating;
             const visitData = {
-                userId: currentUser.uid,
-                name: form.querySelector("#pavilion-name").value,
-                date: form.querySelector("#visit-date").value,
-                waitTime: form.querySelector("#wait-time").value,
-                review: form.querySelector("#review-text").value,
+                userId: currentUser.uid, name: form.querySelector("#pavilion-name").value,
+                date: form.querySelector("#visit-date").value, rating: parseInt(rating, 10) || 0,
+                waitTime: form.querySelector("#wait-time").value, review: form.querySelector("#review-text").value,
                 createdAt: new Date(),
             };
             if (visitData.name && visitData.date) {
@@ -208,9 +187,7 @@ const ExpoApp = {
                     await addDoc(collection(firestoreDB, ExpoApp.constants.COLLECTIONS.VISITS), visitData);
                     ExpoApp.ui.closeVisitModal();
                     ExpoApp.ui.renderVisitHistory();
-                } catch (error) {
-                    console.error("訪問履歴の保存に失敗:", error);
-                }
+                } catch (error) { console.error("訪問履歴の保存に失敗:", error); }
             }
         },
         async handleEditFormSubmit(event) {
@@ -218,27 +195,25 @@ const ExpoApp = {
             const form = ExpoApp.elements.editForm;
             const docId = form.querySelector("#edit-doc-id").value;
             if (!docId) return;
+            const rating = form.querySelector('.star-rating-input').dataset.rating;
             const updatedData = {
                 date: form.querySelector("#edit-visit-date").value,
                 waitTime: form.querySelector("#edit-wait-time").value,
                 review: form.querySelector("#edit-review-text").value,
+                rating: parseInt(rating, 10) || 0,
             };
             try {
                 await updateDoc(doc(firestoreDB, ExpoApp.constants.COLLECTIONS.VISITS, docId), updatedData);
                 ExpoApp.ui.closeEditModal();
                 ExpoApp.ui.renderVisitHistory();
-            } catch (error) {
-                console.error("履歴の更新に失敗:", error);
-            }
+            } catch (error) { console.error("履歴の更新に失敗:", error); }
         },
         async handleDeleteHistory(docId) {
             if (!confirm("この履歴を本当に削除しますか？")) return;
             try {
                 await deleteDoc(doc(firestoreDB, ExpoApp.constants.COLLECTIONS.VISITS, docId));
                 ExpoApp.ui.renderVisitHistory();
-            } catch (error) {
-                console.error("履歴の削除に失敗:", error);
-            }
+            } catch (error) { console.error("履歴の削除に失敗:", error); }
         },
         async handleAddWish(pavilionName) {
             const { currentUser, wishlist } = ExpoApp.state;
@@ -248,18 +223,14 @@ const ExpoApp = {
             try {
                 await addDoc(collection(firestoreDB, ExpoApp.constants.COLLECTIONS.WISHES), wishData);
                 ExpoApp.ui.renderWishlist();
-            } catch (error) {
-                console.error("行きたいリストへの追加に失敗:", error);
-            }
+            } catch (error) { console.error("行きたいリストへの追加に失敗:", error); }
         },
         async handleDeleteWish(docId) {
             if (!confirm("このパビリオンを行きたいリストから削除しますか？")) return;
             try {
                 await deleteDoc(doc(firestoreDB, ExpoApp.constants.COLLECTIONS.WISHES, docId));
                 ExpoApp.ui.renderWishlist();
-            } catch (error) {
-                console.error("行きたいリストからの削除に失敗:", error);
-            }
+            } catch (error) { console.error("行きたいリストからの削除に失敗:", error); }
         },
     },
 
@@ -291,45 +262,39 @@ const ExpoApp = {
                 const isTargetView = key === viewNameToShow;
                 views[key].view.style.display = isTargetView ? 'block' : 'none';
                 views[key].btn.classList.toggle('active', isTargetView);
-                if (isTargetView && views[key].renderFn) {
-                    views[key].renderFn();
-                }
+                if (isTargetView && views[key].renderFn) views[key].renderFn();
             }
         },
         async renderVisitHistory() {
             const { visitHistoryList } = ExpoApp.elements;
             const { currentUser } = ExpoApp.state;
-            if (!currentUser) {
-                visitHistoryList.innerHTML = '<p style="text-align: center;">ログインすると履歴が表示されます。</p>';
-                return;
-            }
+            if (!currentUser) { visitHistoryList.innerHTML = '<p style="text-align: center;">ログインすると履歴が表示されます。</p>'; return; }
             visitHistoryList.innerHTML = '<p style="text-align: center;">データを読み込み中...</p>';
             const q = query(collection(firestoreDB, ExpoApp.constants.COLLECTIONS.VISITS), where("userId", "==", currentUser.uid));
             const querySnapshot = await getDocs(q);
             const uniqueVisitNames = new Set();
             const visitsForRender = [];
-            querySnapshot.forEach(doc => {
-                const visitData = doc.data();
-                uniqueVisitNames.add(visitData.name);
-                visitsForRender.push({ id: doc.id, ...visitData });
-            });
+            querySnapshot.forEach(doc => { const d = doc.data(); uniqueVisitNames.add(d.name); visitsForRender.push({ id: doc.id, ...d }); });
             ExpoApp.state.visitCount = uniqueVisitNames.size;
             ExpoApp.ui.updateConquestCounter();
             visitsForRender.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
             visitHistoryList.innerHTML = "";
-            if (visitsForRender.length === 0) {
-                visitHistoryList.innerHTML = '<p style="text-align: center;">まだ訪問履歴がありません。</p>';
-                return;
-            }
+            if (visitsForRender.length === 0) { visitHistoryList.innerHTML = '<p style="text-align: center;">まだ訪問履歴がありません。</p>'; return; }
             const fragment = document.createDocumentFragment();
             visitsForRender.forEach(visit => {
                 const item = document.createElement("li");
                 item.className = "history-card";
+                const rating = visit.rating || 0;
+                const starsHTML = Array.from({ length: 5 }, (_, i) => `<span class="star ${i < rating ? '' : 'empty'}">★</span>`).join('');
+                const waitTimeHTML = visit.waitTime ? `<p class="details">${"待ち時間: "}<strong>${visit.waitTime}</strong>分</p>` : '';
+                const reviewHTML = visit.review ? `<p class="review">${visit.review}</p>` : '';
                 item.innerHTML = `
                     <div class="info">
-                        <strong>${visit.name}</strong><span class="date">${visit.date}</span>
-                        <p class="details">${visit.waitTime ? `待ち時間: <strong>${visit.waitTime}</strong>分` : ""}</p>
-                        ${visit.review ? `<p class="review">${visit.review}</p>` : ""}
+                        <strong>${visit.name}</strong>
+                        <span class="date">訪問日: ${visit.date}</span>
+                        <div class="star-rating-display">${starsHTML}</div>
+                        ${waitTimeHTML}
+                        ${reviewHTML}
                     </div>
                     <div class="actions">
                         <button class="edit-button" data-id="${visit.id}">編集</button>
@@ -341,20 +306,14 @@ const ExpoApp = {
         },
         renderPavilions() {
             const { pavilionList } = ExpoApp.elements;
-            const { currentPage, filteredPavilions, wishlist } = ExpoApp.state;
-            const { itemsPerPage, areaMap } = ExpoApp.config;
+            const { currentPage, filteredPavilions } = ExpoApp.state;
+            const { itemsPerPage } = ExpoApp.config;
             pavilionList.innerHTML = "";
             const startIndex = (currentPage - 1) * itemsPerPage;
             const paginatedItems = filteredPavilions.slice(startIndex, startIndex + itemsPerPage);
-            if (paginatedItems.length === 0) {
-                pavilionList.innerHTML = "<p>該当するパビリオンが見つかりません。</p>";
-                return;
-            }
+            if (paginatedItems.length === 0) { pavilionList.innerHTML = "<p>該当するパビリオンが見つかりません。</p>"; return; }
             const fragment = document.createDocumentFragment();
-            paginatedItems.forEach(pavilion => {
-                const card = ExpoApp.ui.createPavilionCard(pavilion);
-                fragment.appendChild(card);
-            });
+            paginatedItems.forEach(pavilion => { const card = ExpoApp.ui.createPavilionCard(pavilion); fragment.appendChild(card); });
             pavilionList.appendChild(fragment);
             ExpoApp.ui.renderPagination();
         },
@@ -393,20 +352,14 @@ const ExpoApp = {
                 button.className = "page-btn";
                 button.innerText = i;
                 if (i === currentPage) button.classList.add("active");
-                button.addEventListener("click", () => {
-                    ExpoApp.state.currentPage = i;
-                    ExpoApp.ui.renderPavilions();
-                });
+                button.addEventListener("click", () => { ExpoApp.state.currentPage = i; ExpoApp.ui.renderPavilions(); });
                 paginationContainer.appendChild(button);
             }
         },
         async renderWishlist() {
             const { wishlistList } = ExpoApp.elements;
             const { currentUser, allPavilions } = ExpoApp.state;
-            if (!currentUser) {
-                wishlistList.innerHTML = '<p style="text-align: center;">ログインすると「行きたいリスト」が表示されます。</p>';
-                return;
-            }
+            if (!currentUser) { wishlistList.innerHTML = '<p style="text-align: center;">ログインすると「行きたいリスト」が表示されます。</p>'; return; }
             wishlistList.innerHTML = '<p style="text-align: center;">データを読み込み中...</p>';
             try {
                 const wishes = await ExpoApp.api.fetchWishes(currentUser.uid);
@@ -418,9 +371,7 @@ const ExpoApp = {
                     const fragment = document.createDocumentFragment();
                     wishes.forEach(wish => {
                         const pavilion = allPavilions.find(p => p.name === wish.pavilionName);
-                        if (pavilion) {
-                            fragment.appendChild(ExpoApp.ui.createWishlistItemCard(pavilion, wish.id));
-                        }
+                        if (pavilion) { fragment.appendChild(ExpoApp.ui.createWishlistItemCard(pavilion, wish.id)); }
                     });
                     wishlistList.appendChild(fragment);
                 }
@@ -453,10 +404,7 @@ const ExpoApp = {
             const { conquestCounter } = ExpoApp.elements;
             const { visitCount, allPavilions, currentUser } = ExpoApp.state;
             if (currentUser && allPavilions.length > 0) {
-                conquestCounter.innerHTML = `
-                    <span class="count">${visitCount}</span>
-                    <span class="total">/ ${allPavilions.length}</span>
-                    <span class="label">制覇</span>`;
+                conquestCounter.innerHTML = `<span class="count">${visitCount}</span><span class="total">/ ${allPavilions.length}</span><span class="label">制覇</span>`;
                 conquestCounter.style.display = 'flex';
             } else {
                 conquestCounter.style.display = 'none';
@@ -497,6 +445,12 @@ const ExpoApp = {
                     editForm.querySelector("#edit-visit-date").value = data.date;
                     editForm.querySelector("#edit-wait-time").value = data.waitTime;
                     editForm.querySelector("#edit-review-text").value = data.review;
+                    // ★★★ 編集モーダルに評価をセット ★★★
+                    const starContainer = editForm.querySelector('.star-rating-input');
+                    starContainer.dataset.rating = data.rating || 0;
+                    starContainer.querySelectorAll('span').forEach(star => {
+                        star.style.color = star.dataset.value <= starContainer.dataset.rating ? 'var(--star-color)' : 'var(--border-color)';
+                    });
                     editModal.style.display = "flex";
                 }
             } catch (error) {
@@ -505,6 +459,30 @@ const ExpoApp = {
         },
         closeEditModal() {
             ExpoApp.elements.editModal.style.display = "none";
+        },
+        applyFiltersAndSort(searchTerm = ExpoApp.elements.searchInput.value) {
+            const { allPavilions } = ExpoApp.state;
+            const { area, reservation, sortBy } = ExpoApp.state.filters;
+            let processedPavilions = [...allPavilions];
+            if (area !== 'all') { processedPavilions = processedPavilions.filter(p => p.area === area); }
+            if (reservation !== 'all') { const required = reservation === 'required'; processedPavilions = processedPavilions.filter(p => p.reservation?.some(r => r.startsWith('reservation')) === required); }
+            if (searchTerm) { const lowerSearchTerm = searchTerm.toLowerCase(); processedPavilions = processedPavilions.filter(p => p.name.toLowerCase().includes(lowerSearchTerm) || p.searchTags?.some(t => t.toLowerCase().includes(lowerSearchTerm))); }
+            if (sortBy.startsWith('duration')) { processedPavilions.sort((a, b) => { const dA = a.duration || 0; const dB = b.duration || 0; return sortBy === 'duration_asc' ? dA - dB : dB - dA; }); }
+            ExpoApp.state.filteredPavilions = processedPavilions;
+            ExpoApp.state.currentPage = 1;
+            ExpoApp.ui.renderPavilions();
+        },
+        populateAreaFilter() {
+            const { areaFilter } = ExpoApp.elements;
+            const { areaMap } = ExpoApp.config;
+            const fragment = document.createDocumentFragment();
+            for (const key in areaMap) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = areaMap[key];
+                fragment.appendChild(option);
+            }
+            areaFilter.appendChild(fragment);
         }
     }
 };

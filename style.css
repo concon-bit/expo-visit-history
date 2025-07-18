@@ -1,7 +1,5 @@
 /* ==========================================================================
    1. Root Variables & Body Defaults
-   - アプリ全体で使う色やフォントの定義
-   - 基本的なページのスタイル設定
    ========================================================================== */
 :root {
     --primary-color: #007bff;
@@ -17,6 +15,8 @@
     --card-bg-color: #ffffff;
     --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     --font-family: 'Noto Sans JP', sans-serif;
+    --star-color: #f39c12;
+    /* スター評価用の色 */
 }
 
 body {
@@ -25,12 +25,11 @@ body {
     color: var(--text-color);
     margin: 0;
     line-height: 1.6;
-    -webkit-text-size-adjust: 100%; /* iOSで文字サイズが自動調整されるのを防ぐ */
+    -webkit-text-size-adjust: 100%;
 }
 
 /* ==========================================================================
    2. General Layout & Typography
-   - 全体的なレイアウトや見出しのスタイル
    ========================================================================== */
 main {
     padding: 20px;
@@ -43,16 +42,15 @@ h2 {
     color: var(--primary-color);
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 8px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin: 20px 0;
 }
+
 h2:first-child {
     margin-top: 0;
 }
 
 /* ==========================================================================
    3. Component: Header
-   - ページ上部のヘッダー関連のスタイル
    ========================================================================== */
 header {
     background-color: var(--card-bg-color);
@@ -70,23 +68,33 @@ header h1 {
     font-size: 1.8em;
     line-height: 1.2;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.myakumyaku-logo {
+    height: 1.8em;
+    margin-left: 8px;
 }
 
 .title-expo {
     color: var(--danger-color);
     font-weight: 700;
 }
+
 .title-2025 {
     color: var(--primary-color);
     font-weight: 700;
 }
+
 .title-subtitle {
     display: block;
     font-weight: 700;
     color: var(--text-color);
+    font-size: 0.5em;
 }
 
-/* --- Auth Area --- */
 #auth-container {
     position: relative;
     display: flex;
@@ -121,43 +129,46 @@ header h1 {
     color: white;
     transition: all 0.2s ease-in-out;
 }
+
 #login-btn:hover {
     background-color: var(--primary-hover-color);
 }
 
 /* ==========================================================================
    4. Component: Conquest Counter
-   - メインコンテンツ上部の制覇カウンター
    ========================================================================== */
 .conquest-counter {
     display: none;
-    align-items: baseline;
+    align-items: center;
     justify-content: center;
     background-color: var(--primary-color);
     color: white;
-    padding: 6px 15px;
-    border-radius: 8px;
-    font-size: 16px;
+    padding: 5px 12px;
+    border-radius: 20px;
     font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     margin: 0 auto 25px auto;
-    max-width: 250px;
+    white-space: nowrap;
+    width: fit-content;
 }
+
 .conquest-counter .count {
-    font-size: 24px;
-    line-height: 1;
+    font-size: 1.2em;
 }
+
 .conquest-counter .total {
-    font-size: 16px;
+    font-size: 0.9em;
     margin: 0 4px;
+    opacity: 0.8;
 }
+
 .conquest-counter .label {
-    font-size: 14px;
+    font-size: 0.8em;
+    opacity: 0.8;
 }
 
 /* ==========================================================================
    5. Component: Account Popup
-   - ヘッダーのユーザーアイコンクリックで表示されるポップアップ
    ========================================================================== */
 .account-popup {
     display: none;
@@ -173,6 +184,7 @@ header h1 {
     overflow: hidden;
     animation: fadeIn 0.2s ease-out;
 }
+
 .popup-user-info {
     padding: 20px;
     display: flex;
@@ -181,19 +193,23 @@ header h1 {
     gap: 12px;
     border-bottom: 1px solid #555;
 }
+
 .popup-user-info img {
     width: 64px;
     height: 64px;
     border-radius: 50%;
 }
+
 .popup-user-info .name {
     font-size: 1.1em;
     font-weight: bold;
 }
+
 .popup-user-info .email {
     font-size: 0.9em;
     color: #ccc;
 }
+
 .popup-logout-btn {
     display: block;
     width: 100%;
@@ -205,19 +221,21 @@ header h1 {
     font-size: 1em;
     text-align: center;
 }
+
 .popup-logout-btn:hover {
     background-color: #444;
 }
 
 /* ==========================================================================
-   6. Component: View Switcher (Tabs)
+   6. Component: View Switcher & Filters
    ========================================================================== */
 .view-switcher {
     display: flex;
     justify-content: center;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
 }
+
 .view-switcher button {
     padding: 15px 30px;
     font-size: 1.1em;
@@ -230,9 +248,41 @@ header h1 {
     transition: all 0.3s ease;
     transform: translateY(1px);
 }
+
 .view-switcher button.active {
     color: var(--primary-color);
     border-bottom-color: var(--primary-color);
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    background-color: var(--card-bg-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-item label {
+    font-weight: bold;
+    font-size: 0.9em;
+}
+
+.filter-item select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    font-size: 0.9em;
+    background-color: #fff;
 }
 
 /* ==========================================================================
@@ -256,6 +306,7 @@ header h1 {
     list-style: none;
     padding: 0;
 }
+
 #pavilionList {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
@@ -270,15 +321,39 @@ header h1 {
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .pavilion-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.08);
 }
-.pavilion-card a { text-decoration: none; color: inherit; }
-.pavilion-card .card-header-image { width: 100%; height: 150px; object-fit: cover; }
-.pavilion-card .card-content { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
-.pavilion-card h3 { font-size: 1.2em; margin: 0 0 10px 0; }
-.pavilion-card p { margin: 0 0 8px 0; font-size: 0.9em; }
+
+.pavilion-card a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.pavilion-card .card-header-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.pavilion-card .card-content {
+    padding: 15px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.pavilion-card h3 {
+    font-size: 1.2em;
+    margin: 0 0 10px 0;
+}
+
+.pavilion-card p {
+    margin: 0 0 8px 0;
+    font-size: 0.9em;
+}
 
 .card-footer {
     display: grid;
@@ -287,6 +362,7 @@ header h1 {
     margin-top: auto;
     padding-top: 10px;
 }
+
 .card-footer button {
     padding: 10px;
     border: none;
@@ -294,11 +370,25 @@ header h1 {
     cursor: pointer;
     font-weight: bold;
 }
-.add-to-history-btn { background-color: var(--success-color); color: white; }
-.add-to-wishlist-btn { background-color: var(--primary-color); color: white; }
-.add-to-wishlist-btn.added { background-color: #ccc; color: #666; cursor: not-allowed; }
 
-.history-card, .wishlist-card {
+.add-to-history-btn {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.add-to-wishlist-btn {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.add-to-wishlist-btn.added {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.history-card,
+.wishlist-card {
     background-color: var(--card-bg-color);
     border-radius: 8px;
     box-shadow: var(--card-shadow);
@@ -306,47 +396,209 @@ header h1 {
     display: flex;
     align-items: flex-start;
 }
-.history-card { border-left: 5px solid var(--primary-color); }
-.wishlist-card { border-left: 5px solid var(--success-color); gap: 15px; }
-.history-card .info, .wishlist-card .info { flex-grow: 1; }
-.history-card strong, .wishlist-card h3 { font-size: 1.2em; margin: 0 0 5px 0; }
-.wishlist-card-image { width: 120px; height: 80px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
-.history-card .actions, .wishlist-card .actions { display: flex; flex-direction: column; gap: 10px; margin-left: 15px; }
-.history-card .actions button, .wishlist-card .actions button { color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
-.history-card .edit-button { background-color: var(--primary-color); }
-.history-card .delete-button { background-color: var(--danger-color); }
-.wishlist-card .move-to-history-btn { background-color: var(--success-color); }
-.wishlist-card .delete-wish-btn { background-color: var(--danger-color); }
 
+.history-card {
+    border-left: 5px solid var(--primary-color);
+}
+
+.history-card strong {
+    font-size: 1.2em;
+    color: var(--text-color);
+    display: block;
+    margin-bottom: 5px;
+}
+
+.history-card .date {
+    font-size: 0.9em;
+    color: var(--text-muted-color);
+    display: block;
+    margin-bottom: 10px;
+}
+
+.history-card .details {
+    margin: 5px 0;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+.history-card .review {
+    margin-top: 10px;
+    padding-left: 15px;
+    border-left: 3px solid #eee;
+}
+
+.history-card .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-left: 15px;
+}
+
+.star-rating-display {
+    color: var(--star-color);
+    font-size: 1.2em;
+    margin: 5px 0 10px;
+}
+
+.star-rating-display .star.empty {
+    color: var(--border-color);
+}
+
+.wishlist-card {
+    border-left: 5px solid var(--success-color);
+    gap: 15px;
+}
+
+.wishlist-card h3 {
+    font-size: 1.2em;
+    margin: 0 0 5px 0;
+}
+
+.wishlist-card-image {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.history-card .actions button,
+.wishlist-card .actions button {
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.history-card .edit-button {
+    background-color: var(--primary-color);
+}
+
+.history-card .delete-button {
+    background-color: var(--danger-color);
+}
+
+.wishlist-card .move-to-history-btn {
+    background-color: var(--success-color);
+}
+
+.wishlist-card .delete-wish-btn {
+    background-color: var(--danger-color);
+}
 
 /* ==========================================================================
    8. Component: Modal (Dialog)
    ========================================================================== */
 .modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); display: none;
-    justify-content: center; align-items: center; z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
+
 .modal-content {
-    background-color: var(--card-bg-color); padding: 30px; border-radius: 8px;
-    box-shadow: var(--card-shadow); position: relative; max-width: 500px;
-    width: 90%; max-height: 90vh; overflow-y: auto;
+    background-color: var(--card-bg-color);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
     animation: fadeIn 0.3s ease-out;
 }
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
+
 .modal-close-btn {
-    position: absolute; top: 15px; right: 15px; background: none; border: none;
-    font-size: 2em; color: var(--text-muted-color); cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 2em;
+    color: var(--text-muted-color);
+    cursor: pointer;
 }
-.modal-content h2 { margin-top: 0; font-size: 1.5em; padding-bottom: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--primary-color); }
-.modal-content label { display: block; margin-bottom: 5px; font-weight: bold; }
-.modal-content input, .modal-content textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; box-sizing: border-box; }
+
+.modal-content h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
 .modal-content button[type="submit"] {
-    width: 100%; margin-top: 10px; background-color: var(--primary-color); color: white;
-    border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-size: 1.1em; font-weight: bold;
+    width: 100%;
+    margin-top: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.star-rating-input {
+    cursor: pointer;
+}
+
+.star-rating-input span {
+    font-size: 2em;
+    color: var(--border-color);
+    transition: color 0.2s;
+}
+
+.star-rating-input:hover span {
+    color: var(--star-color);
+}
+
+.star-rating-input span:hover~span {
+    color: var(--border-color);
+}
+
+.star-rating-input[data-rating="1"] span:nth-child(-n+1),
+.star-rating-input[data-rating="2"] span:nth-child(-n+2),
+.star-rating-input[data-rating="3"] span:nth-child(-n+3),
+.star-rating-input[data-rating="4"] span:nth-child(-n+4),
+.star-rating-input[data-rating="5"] span:nth-child(-n+5) {
+    color: var(--star-color);
 }
 
 /* ==========================================================================
@@ -359,6 +611,7 @@ header h1 {
     flex-wrap: wrap;
     gap: 5px;
 }
+
 .page-btn {
     padding: 8px 14px;
     border: 1px solid var(--border-color);
@@ -367,33 +620,44 @@ header h1 {
     cursor: pointer;
     border-radius: 5px;
 }
+
 .page-btn.active {
     background-color: var(--primary-color);
     color: white;
 }
 
 /* ==========================================================================
-   10. Responsive Design (for iPhone & smaller screens)
+   10. Responsive Design
    ========================================================================== */
+@media (max-width: 768px) {
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 @media (max-width: 480px) {
     main {
         padding: 15px;
     }
-    
+
     header {
         padding: 12px 15px;
         flex-wrap: nowrap;
         justify-content: space-between;
     }
+
     header h1 {
         font-size: 1.2em;
         text-align: left;
         width: auto;
         order: 0;
     }
+
     #auth-container {
         order: 0;
     }
+
     .title-subtitle {
         font-size: 0.8em;
     }
@@ -411,38 +675,46 @@ header h1 {
         padding: 12px 10px;
         font-size: 0.9em;
     }
-    
+
     #pavilionList {
         display: flex;
         flex-direction: column;
         gap: 15px;
     }
-    
-    .history-card, .wishlist-card {
+
+    .history-card,
+    .wishlist-card {
         flex-direction: column;
         align-items: stretch;
     }
-    .history-card .actions, .wishlist-card .actions {
+
+    .history-card .actions,
+    .wishlist-card .actions {
         flex-direction: row;
         margin-top: 15px;
         margin-left: 0;
         justify-content: flex-end;
     }
-    .history-card .actions button, .wishlist-card .actions button {
+
+    .history-card .actions button,
+    .wishlist-card .actions button {
         flex-grow: 1;
         max-width: 120px;
     }
+
     .wishlist-card-image {
         width: 100%;
         height: 120px;
     }
-    
+
     .modal-content {
         padding: 25px;
         width: 92%;
         max-height: 85vh;
     }
-    .modal-content input, .modal-content textarea {
-        font-size: 16px; /* iOSのズーム防止 */
+
+    .modal-content input,
+    .modal-content textarea {
+        font-size: 16px;
     }
 }
