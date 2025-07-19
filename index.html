@@ -12,13 +12,13 @@
 <body>
     <header>
         <h1>
-            <img src="/images/myakumyaku.png" alt="ミャクミャク" class="myakumyaku-logo">
             <div class="main-title">
                 <div>
                     <span class="title-expo">EXPO</span><span class="title-2025">2025</span>
                 </div>
                 <span class="title-subtitle">訪問履歴</span>
             </div>
+            <img src="/images/myakumyaku.png" alt="ミャクミャク" class="myakumyaku-logo">
         </h1>
         <div id="auth-container">
             <div id="user-info"></div>
@@ -43,7 +43,7 @@
                     <label for="area-filter">エリアで絞り込み:</label>
                     <select id="area-filter">
                         <option value="all">すべてのエリア</option>
-                        </select>
+                    </select>
                 </div>
                 <div class="filter-item">
                     <label for="reservation-filter">予約：</label>
@@ -62,7 +62,6 @@
                     </select>
                 </div>
             </section>
-            
             <section id="search-section">
                 <input type="text" id="searchInput" placeholder="パビリオン名、愛称などで検索...">
             </section>
@@ -73,6 +72,15 @@
         <div id="history-view" style="display: none;">
             <section id="history-section">
                 <h2>訪問履歴一覧</h2>
+                <div class="history-controls">
+                    <input type="text" id="historySearchInput" placeholder="パビリオン名で検索...">
+                    <select id="historySortBy">
+                        <option value="date_desc">訪問日 (新しい順)</option>
+                        <option value="date_asc">訪問日 (古い順)</option>
+                        <option value="rating_desc">評価 (高い順)</option>
+                        <option value="rating_asc">評価 (低い順)</option>
+                    </select>
+                </div>
                 <ul id="visit-history"></ul>
             </section>
         </div>

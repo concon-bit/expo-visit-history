@@ -284,6 +284,29 @@ header h1 {
     background-color: #fff;
 }
 
+/* ★★★ 訪問履歴の検索・ソートUIのスタイルを追加 ★★★ */
+.history-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.history-controls input,
+.history-controls select {
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
+    font-size: 1em;
+    font-family: var(--font-family);
+}
+
+.history-controls input {
+    flex-grow: 1;
+    /* 横幅を自動で広げる */
+}
+
+
 /* ==========================================================================
    7. Component: Cards (Pavilion, History, Wishlist)
    ========================================================================== */
@@ -360,14 +383,6 @@ header h1 {
     gap: 10px;
     margin-top: auto;
     padding-top: 10px;
-}
-
-.card-footer button {
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
 }
 
 .add-to-history-btn {
@@ -457,6 +472,7 @@ header h1 {
     color: var(--star-color);
     font-size: 1.2em;
     margin-bottom: 8px;
+    line-height: 1;
 }
 
 .star-rating-display .star.empty {
@@ -647,7 +663,9 @@ header h1 {
    10. Responsive Design
    ========================================================================== */
 @media (max-width: 768px) {
-    .filter-container {
+
+    .filter-container,
+    .history-controls {
         flex-direction: column;
         align-items: stretch;
     }

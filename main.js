@@ -29,6 +29,8 @@ const ExpoApp = {
         allPavilions: [],
         filteredPavilions: [],
         wishlist: [],
+        allVisits: [],
+        filteredVisits: [],
         currentPage: 1,
         currentUser: null,
         visitCount: 0,
@@ -64,6 +66,7 @@ const ExpoApp = {
             editForm: D.getElementById('edit-form'), userInfo: D.getElementById('user-info'), conquestCounter: D.getElementById('conquest-counter'),
             accountPopup: D.getElementById('account-popup'), popupUserInfo: D.getElementById('popup-user-info'), popupLogoutBtn: D.getElementById('popup-logout-btn'),
             areaFilter: D.getElementById('area-filter'), reservationFilter: D.getElementById('reservation-filter'), sortBy: D.getElementById('sort-by'),
+            historySearchInput: D.getElementById('historySearchInput'), historySortBy: D.getElementById('historySortBy'),
         };
     },
 
@@ -92,6 +95,8 @@ const ExpoApp = {
         elements.areaFilter.addEventListener('change', () => { ExpoApp.state.filters.area = ExpoApp.elements.areaFilter.value; ExpoApp.ui.applyFiltersAndSort(); });
         elements.reservationFilter.addEventListener('change', () => { ExpoApp.state.filters.reservation = ExpoApp.elements.reservationFilter.value; ExpoApp.ui.applyFiltersAndSort(); });
         elements.sortBy.addEventListener('change', () => { ExpoApp.state.filters.sortBy = ExpoApp.elements.sortBy.value; ExpoApp.ui.applyFiltersAndSort(); });
+        elements.historySearchInput.addEventListener('input', () => ExpoApp.ui.applyHistoryFiltersAndSort());
+        elements.historySortBy.addEventListener('change', () => ExpoApp.ui.applyHistoryFiltersAndSort());
         const setupStarRating = (container) => {
             container.addEventListener('click', e => { if (e.target.matches('span')) container.dataset.rating = e.target.dataset.value; });
             container.addEventListener('mouseover', e => {
@@ -272,28 +277,50 @@ const ExpoApp = {
             visitHistoryList.innerHTML = '<p style="text-align: center;">データを読み込み中...</p>';
             const q = query(collection(firestoreDB, ExpoApp.constants.COLLECTIONS.VISITS), where("userId", "==", currentUser.uid));
             const querySnapshot = await getDocs(q);
-            const uniqueVisitNames = new Set();
-            const visitsForRender = [];
-            querySnapshot.forEach(doc => { const d = doc.data(); uniqueVisitNames.add(d.name); visitsForRender.push({ id: doc.id, ...d }); });
+            const visits = [];
+            querySnapshot.forEach(doc => visits.push({ id: doc.id, ...doc.data() }));
+            ExpoApp.state.allVisits = visits;
+            ExpoApp.ui.applyHistoryFiltersAndSort();
+        },
+        applyHistoryFiltersAndSort() {
+            const { allVisits } = ExpoApp.state;
+            const { visitHistoryList, historySearchInput, historySortBy } = ExpoApp.elements;
+            let processedVisits = [...allVisits];
+            const searchTerm = historySearchInput.value.toLowerCase();
+            if (searchTerm) {
+                processedVisits = processedVisits.filter(v => v.name.toLowerCase().includes(searchTerm));
+            }
+            const sortBy = historySortBy.value;
+            processedVisits.sort((a, b) => {
+                switch (sortBy) {
+                    case 'date_asc': return a.date.localeCompare(b.date);
+                    case 'rating_desc': return (b.rating || 0) - (a.rating || 0);
+                    case 'rating_asc': return (a.rating || 0) - (b.rating || 0);
+                    case 'date_desc': default: return b.date.localeCompare(a.date);
+                }
+            });
+            ExpoApp.state.filteredVisits = processedVisits;
+            visitHistoryList.innerHTML = "";
+            if (processedVisits.length === 0) {
+                visitHistoryList.innerHTML = '<p style="text-align: center;">該当する履歴がありません。</p>';
+                return;
+            }
+            const uniqueVisitNames = new Set(allVisits.map(v => v.name));
             ExpoApp.state.visitCount = uniqueVisitNames.size;
             ExpoApp.ui.updateConquestCounter();
-            visitsForRender.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
-            visitHistoryList.innerHTML = "";
-            if (visitsForRender.length === 0) { visitHistoryList.innerHTML = '<p style="text-align: center;">まだ訪問履歴がありません。</p>'; return; }
             const fragment = document.createDocumentFragment();
-            visitsForRender.forEach(visit => {
+            processedVisits.forEach(visit => {
                 const item = document.createElement("li");
                 item.className = "history-card";
                 const rating = visit.rating || 0;
                 const starsHTML = rating > 0 ? Array.from({ length: 5 }, (_, i) => `<span class="star ${i < rating ? '' : 'empty'}">★</span>`).join('') : '';
-                const waitTimeHTML = visit.waitTime ? `待ち時間: <strong>${visit.waitTime}</strong>分` : '';
+                const waitTimeHTML = visit.waitTime ? `<strong>${visit.waitTime}</strong>分` : '';
                 const reviewHTML = visit.review ? `<p class="review">${visit.review}</p>` : '';
-
                 item.innerHTML = `
                     <div class="info">
                         <strong>${visit.name}</strong>
                         <div class="history-meta-item">訪問日: ${visit.date}</div>
-                        <div class="history-meta-item">${waitTimeHTML}</div>
+                        <div class="history-meta-item">${waitTimeHTML ? `待ち時間: ${waitTimeHTML}`: ''}</div>
                         <div class="star-rating-display">${starsHTML}</div>
                         ${reviewHTML}
                     </div>
